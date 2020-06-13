@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
+//#define DELETE_TEMPFILE_WHEN_FINISHED
 #define TEMPFILE "tempfile.asm"
 
 #define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
@@ -19,6 +20,7 @@ FILE *fin, *fout, *ftemp;
 bool parse_cmd_args(int argc, const char **argv);
 void preprocess(void);
 void assemble(void);
+void assemble_line(char *line, int linenum);
 
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum);
@@ -29,11 +31,11 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum);
 
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);
 void print_machine(FILE *stream, char *word, bool print_pretty);
-//void bail(const char *msg);
 void store_label(const char *name, uint16_t addr);
 uint16_t search_label(const char *name);
 void binstring(char *strbuf, int bin, int bits);
 uint8_t mnemonic_to_opcode(const char *mnemonic);
+bool is_whitespace(const char *str);
 
 
 
@@ -68,20 +70,27 @@ mnem_entry mnemonic_table[] =
 	{"setsfr", format_machine_sfr},
 	{"getsfr", format_machine_sfr}
 };
-
+/*const char *pseudoinstruction_table[][2] =
+{
+	"clr r", "xor r,r"
+}*/
 
 int main(int argc, const char **argv)
 {
-
 	if(!parse_cmd_args(argc, argv))
 		printf("exiting...\n");
 
 	preprocess();
 	assemble();
 
-	//delete temp file
 	fclose(fin);
 	fclose(fout);
+	fclose(ftemp);
+
+	//delete temp file
+	#ifdef DELETE_TEMPFILE_WHEN_FINISHED
+	if(remove(TEMPFILE)) printf("failed to delete tempfile\n");
+	#endif
 
 	return 0;
 }
@@ -133,34 +142,39 @@ void preprocess(void)
 		//remove comments, search for reserved characters
 		for(char *p=buf; p<buf+80; p++)
 		{
-			if(*p=='\0')
-				break;
-			else if(*p=='|')
+			switch(*p)
 			{
-				printf("buf:\n%s\n", buf);
-				bail("found illegal character \'|\'");
-			}
-			else if(*p==';')
-			{
-				*p++ = '\n';
-				*p = '\0';
-			}
-			else if(*p==':')	//label
-			{
-				*p = '\0';
-				printf("found label %s\n", buf);
-				
-				//add it to the structure
-				store_label(buf, instr_addr);
+				case '\0':
+					goto line_preprocessed;
+					break;
+				case '|':
+					printf("buf:\n%s\n", buf);
+					bail("found illegal character \'|\'");
+					break;
+				case ';':
+					*p++ = '\n';
+					*p = '\0';
+					break;
+				case ':':
+					*p = '\0';
+					printf("found label %s at addr 0x%04x\n", buf, instr_addr);
+					
+					//add it to the structure
+					store_label(buf, instr_addr);
 
-				goto next_line;
+					goto next_line;
 			}
 		}
 
-		if(strlen(buf) > 1)	//this should remove empty lines -- right now it only gets rid of "\n"
-			fprintf(ftemp, "%d|%s", linenum, buf);
+		line_preprocessed:
 
-		instr_addr++;
+		//if(strlen(buf) > 1)	//this should remove empty lines -- right now it only gets rid of "\n"
+		if(!is_whitespace(buf))
+		{
+			fprintf(ftemp, "%d|%s", linenum, buf);
+			instr_addr++;
+		}
+		
 		next_line:
 		linenum++;
 	}
@@ -170,10 +184,10 @@ void preprocess(void)
 #define OPCODE_BITS	(5)
 void assemble(void)
 {
-	char inbuf[81], binbuf[OPCODE_BITS+1], machine[INSTR_BITS+1];
+	char inbuf[81];
 	char *buf;
 	int linenum;
-	char *mnem, *arg0, *arg1;
+
 	fseek(ftemp, 0, SEEK_SET);
 
 	while(1)
@@ -193,31 +207,40 @@ void assemble(void)
 		linenum = strtol(buf, NULL, 10);
 		buf = strtok(NULL, "|");
 
-		printf("read line %d: %s", linenum, buf);
-
-		tokenize_asm(&mnem, &arg0, &arg1, buf);
-
-		int opcode = mnemonic_to_opcode(mnem);
-		binstring(binbuf, opcode, OPCODE_BITS);
-		printf("\tmnemonic: %s (opcode %d)\n", mnem, opcode);
-		printf("\targ 1: %s\n", arg0);
-		printf("\targ 2: %s\n", arg1);
-
-		//for testing, initialize machine code word to a bad value
-		for(int i=0; i<INSTR_BITS; i++)
-			machine[i] = 'x';
-
-		//set opcode
-		binstring(machine+INSTR_BITS-OPCODE_BITS, opcode, OPCODE_BITS);
-		
-		//format the rest of the machine word
-		mnemonic_table[opcode].format(machine, arg0, arg1, linenum);
-
-		//output machine code
-		putchar('\t'); print_machine(stdout, machine, true);
-		print_machine(fout, machine, false);
+		assemble_line(buf, linenum);
 	}
+}
 
+void assemble_line(char *line, int linenum)
+{
+	char binbuf[OPCODE_BITS+1], machine[INSTR_BITS+1];
+	char *mnem, *arg0, *arg1;
+
+	printf("read line %d: %s", linenum, line);
+
+	tokenize_asm(&mnem, &arg0, &arg1, line);
+	if(!mnem)
+		bail("syntax error on line %d", linenum);
+
+	int opcode = mnemonic_to_opcode(mnem);
+	binstring(binbuf, opcode, OPCODE_BITS);
+	printf("\tmnemonic: %s (opcode %d)\n", mnem, opcode);
+	printf("\targ 1: %s\n", arg0);
+	printf("\targ 2: %s\n", arg1);
+
+	//for testing, initialize machine code word to a bad value (should set to '0')
+	for(int i=0; i<INSTR_BITS; i++)
+		machine[i] = 'x';
+
+	//set opcode
+	binstring(machine+INSTR_BITS-OPCODE_BITS, opcode, OPCODE_BITS);
+		
+	//format the rest of the machine word
+	mnemonic_table[opcode].format(machine, arg0, arg1, linenum);
+
+	//output machine code
+	putchar('\t'); print_machine(stdout, machine, true);
+	print_machine(fout, machine, false);
 }
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum)
@@ -238,7 +261,7 @@ void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum)
 	binstring(machine+8, dst, 3);
 
 	//if(arg1[0] != 'r') {printf("error: expected register as dest argument to %s\n", mnem); exit(-1);};
-	if(arg1[0] != 'r') {printf("error: expected register as dest argument\n"); exit(-1);};
+	if(arg1[0] != 'r') {bail("expected register as dest argument on line %d", linenum); exit(-1);};
 	int src = arg1[1] - '0';
 	binstring(machine, src, 3);
 }
@@ -246,7 +269,7 @@ void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum)
 
 void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum)
 {
-	if(arg0[0] != 'r') bail("expected register as argument");
+	if(arg0[0] != 'r') bail("expected register as argument on line %d\n", linenum);
 	int dst = arg0[1] - '0';
 	binstring(machine+8, dst, 3);
 }
@@ -268,7 +291,7 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
 	//the register comes first either way:
 	//setsfr r0, MEMCTL
 	//getsfr r0, MEMCTL
-	if(arg0[0] != 'r') bail("expected register as argument");
+	if(arg0[0] != 'r') bail("expected register as argument on line %d", linenum);
 	int dst = arg0[1] - '0';
 	binstring(machine+8, dst, 3);
 
@@ -283,42 +306,8 @@ void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
 	*arg2 = strtok(NULL, " \t\n");
 }
 
-/*
-const char *mnemonic_table[] =
-{
-	//0: literal instructions	set r0,0x55	cccccddd llllllll
-	"set",
 
-	//1-7: src/dst instructions	cccccddd 00000sss
-	"mov",
-	"add",
-	"sub",
-	"xor",
-	"and",
-	"or",
-	"cmp",
 
-	//8-10: single-operand		cccccddd 00000000
-	"not",
-	"push",
-	"pop",
-
-	//11-15: jump instructions	ccccc0aa aaaaaaaa	jmp literal
-	"jmp",
-	"jeq",
-	"jne",
-	"jgt",
-	"jlt",
-
-	//16-17: sfr (8-bit address range) access		cccccrrr ssssssss
-	"setsfr",
-	"getsfr"
-};
-*/
-/*const char *pseudoinstruction_table[][2] =
-{
-	"clr r", "xor r,r"
-}*/
 
 uint8_t mnemonic_to_opcode(const char *mnemonic)
 {
@@ -348,12 +337,6 @@ void print_machine(FILE *stream, char *word, bool print_pretty)
 	}
 	fputc('\n', stream);
 }
-/*
-void bail(const char *msg)
-{
-	printf("Error: %s\n", msg);
-	exit(-1);
-}*/
 
 typedef struct label_s
 {
@@ -393,11 +376,16 @@ void binstring(char *strbuf, int bin, int bits)
 	for(uint16_t mask=(1<<(bits-1)); mask; mask>>=1)
 	{
 		strbuf[--i] = (bin & mask)? '1':'0';
-		//if(!mask)
-		//	break;
+	}
+}
 
-		//assert(i <= bits);
+bool is_whitespace(const char *str)
+{
+	for(const char *c=str; *c; c++)
+	{
+		if(*c != ' ' && *c != '\t' && *c != '\n')
+			return false;
 	}
 
-	//strbuf[bits] = '\0';
+	return true;
 }
