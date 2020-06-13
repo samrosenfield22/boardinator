@@ -12,6 +12,13 @@
 
 #define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
 
+typedef enum
+{
+	VHDL,
+	RAW,
+	PRETTY
+} machine_fmt;
+
 //
 FILE *fin, *fout, *ftemp;
 
@@ -20,7 +27,7 @@ FILE *fin, *fout, *ftemp;
 bool parse_cmd_args(int argc, const char **argv);
 void preprocess(void);
 uint16_t assemble(void);
-void assemble_line(char *line, int linenum);
+void assemble_line(char *machine, char *line, int linenum);
 
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum);
@@ -30,7 +37,8 @@ void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum);
 void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum);
 
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);
-void print_machine(FILE *stream, char *word, bool print_pretty);
+//void print_machine(FILE *stream, char *word, bool print_pretty);
+void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_fmt fmt);
 void store_label(const char *name, uint16_t addr);
 uint16_t search_label(const char *name);
 void binstring(char *strbuf, int bin, int bits);
@@ -107,8 +115,9 @@ bool parse_cmd_args(int argc, const char **argv)
 	fin = fopen(argv[1], "r");
 	if(!fin)
 	{
-		printf("Fatal error lmao, file \'%s\' doesn't exist!\n", argv[1]);
-		return false;
+		//printf("Fatal error lmao, file \'%s\' doesn't exist!\n", argv[1]);
+		bail("file \'%s\' doesn't exist", argv[1]);
+		//return false;
 	}
 
 	fout = fopen(argv[2], "w");
@@ -130,18 +139,18 @@ void preprocess(void)
 	if(!ftemp) bail("failed to create temp file");
 
 	uint16_t instr_addr = 0x0000;	//10-bit address
-	char buf[81];
+	char buf[161];
 	int linenum = 1;
 	while(1)
 	{
 
 		//
-		fgets(buf, 80, fin);
+		fgets(buf, 160, fin);
 		if(feof(fin))
 			break;
 
 		//remove comments, search for reserved characters
-		for(char *p=buf; p<buf+80; p++)
+		for(char *p=buf; p<buf+160; p++)
 		{
 			switch(*p)
 			{
@@ -185,17 +194,18 @@ void preprocess(void)
 #define OPCODE_BITS	(5)
 uint16_t assemble(void)
 {
-	char inbuf[81];
+	char inbuf[161];
 	char *buf;
 	int linenum;
 	uint16_t wordcnt = 0x0000;
+	char machine[INSTR_BITS+1];
 
 	fseek(ftemp, 0, SEEK_SET);
 
 	while(1)
 	{
 		//read next line
-		fgets(inbuf, 80, ftemp);
+		fgets(inbuf, 160, ftemp);
 		
 		if(feof(ftemp))
 			break;
@@ -209,16 +219,19 @@ uint16_t assemble(void)
 		linenum = strtol(buf, NULL, 10);
 		buf = strtok(NULL, "|");
 
-		assemble_line(buf, linenum);
+		assemble_line(machine, buf, linenum);
+		print_machine(stdout, machine, wordcnt, buf, PRETTY);
+		print_machine(fout, machine, wordcnt, buf, VHDL);
+
 		wordcnt++;
 	}
 
 	return wordcnt;
 }
 
-void assemble_line(char *line, int linenum)
+void assemble_line(char *machine, char *line, int linenum)
 {
-	char binbuf[OPCODE_BITS+1], machine[INSTR_BITS+1];
+	char binbuf[OPCODE_BITS+1];
 	char *mnem, *arg0, *arg1;
 
 	printf("read line %d: %s", linenum, line);
@@ -235,7 +248,8 @@ void assemble_line(char *line, int linenum)
 
 	//for testing, initialize machine code word to a bad value (should set to '0')
 	for(int i=0; i<INSTR_BITS; i++)
-		machine[i] = 'x';
+		machine[i] = '0';
+		//machine[i] = 'x';
 
 	//set opcode
 	binstring(machine+INSTR_BITS-OPCODE_BITS, opcode, OPCODE_BITS);
@@ -244,8 +258,11 @@ void assemble_line(char *line, int linenum)
 	mnemonic_table[opcode].format(machine, arg0, arg1, linenum);
 
 	//output machine code
-	putchar('\t'); print_machine(stdout, machine, true);
-	print_machine(fout, machine, false);
+	//putchar('\t'); print_machine(stdout, machine, true);
+	//print_machine(fout, machine, false);
+
+	
+
 }
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum)
@@ -328,11 +345,13 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 	return 0xFF;
 }
 
-void print_machine(FILE *stream, char *word, bool print_pretty)
+
+
+//void print_machine(FILE *stream, char *word, bool print_pretty)
+void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_fmt fmt)
 {
-	for(int i=INSTR_BITS-1; ; i--)
+	/*for(int i=INSTR_BITS-1; ; i--)
 	{
-		//putchar(word[i]);
 		fputc(word[i], stream);
 		if(print_pretty)
 			if(i == 8 || i == 11)
@@ -340,6 +359,20 @@ void print_machine(FILE *stream, char *word, bool print_pretty)
 
 		if(!i) break;
 	}
+	fputc('\n', stream);*/
+
+
+	if(fmt==VHDL) fprintf(stream, "\t%d => \"", addr);
+	for(int i=INSTR_BITS-1; ; i--)
+	{
+		fputc(word[i], stream);
+		if(fmt==PRETTY)
+			if(i == 8 || i == 11)
+				fputc(' ', stream);
+
+		if(!i) break;
+	}
+	if(fmt==VHDL) fprintf(stream, "\",\t\t--%s", src);
 	fputc('\n', stream);
 }
 
