@@ -2,4 +2,7 @@
 
 *.swp
 *.exe
+
+as/*.asm
+as/*.bin
 tempfile.asm

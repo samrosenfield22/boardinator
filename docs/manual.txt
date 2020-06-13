@@ -1,0 +1,82 @@
+BOARDINATOR MANUAL
+
+I.						Architecture
+II. 					ISA
+III.					Assembler
+	i. 						Features
+	ii. 					Tips
+
+---------------------------------------------------------------------------------------
+I. Architecture
+
+word size: 			8
+instruction size:	16
+program addr:		10
+sfr addr:			8
+
+There are 8 general-purpose registers (r0-r7).
+
+Calling convention: lmao not yet
+
+---------------------------------------------------------------------------------------
+II. ISA
+opcode	mnemonic	op0	op1			machine code		example				description
+00000	set			dst	literal		00000ddd llllllll	set r0,0x40			dst = literal (literal can be dec or hex)
+00001	mov			dst src 		00001ddd 00000sss	mov r1,r0			dst = src
+00010	add			dst src 		00010ddd 00000sss	add r1,r0			dst += src
+00011	sub			dst src 		00011ddd 00000sss	sub r1,r0			dst -= src
+00100	xor			dst src 		00100ddd 00000sss	xor r1,r0			dst ^= src
+00101	and			dst src 		00101ddd 00000sss	and r1,r0			dst &= src
+00110	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
+00111	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)
+01000	not			dst 			01000ddd 00000000	not r0				dst != dst
+01001	push		dst 			01001ddd 00000000	push r0				*sp++ = r0 (UNIMPLEMENTED)
+01010	pop			dst 			01010ddd 00000000	pop r0				r0 = *--sp (UNIMPLEMENTED)
+01011	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
+01100	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
+01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
+01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
+01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
+10000	setsfr 		reg sfr			10000rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
+10001	getsfr 		reg sfr 		10000rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
+
+Flags:
+EF (equal flag): set when cmp operands are equal
+GLF (greater/less than flag): set when op0>op1, cleared when op0<op1. in either case, EF is also cleared.
+
+---------------------------------------------------------------------------------------
+III. Assembler
+
+i. Features
+Some features and quirks about the Boardinator assembler
+Things it does support:
+* Comments (;)
+* Literals in decimal or hex (prefixed with 0x)
+* Labels (for jumps)
+
+Things it does not support (yet):
+* Include directives (.include)
+* Define directives
+* Psuedoinstructions (call, ret)
+
+ii. Tips
+Notes about writing assembly code for the Boardinator
+
+* Unlike in fuller-featured instruction sets, Boardinator assembly only features 1 instruction for processing literals,
+the "set" instruction (which sets a given register to the literal value). Any other operation which involves a literal
+must be split into 2 instructions
+Ex. to do
+	r0 += 10;
+You'd do:
+	set r1,10
+	add r0,r1
+
+* "cmp" is the only instruction which modifies the flag bits -- it must be used for conditional jumps
+Ex. to do
+	if(r0 > 0x35) goto label;
+You'd do:
+	set r1,0x35
+	cmp r0,r1
+	jgt label
+
+

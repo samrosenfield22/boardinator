@@ -19,7 +19,7 @@ FILE *fin, *fout, *ftemp;
 //
 bool parse_cmd_args(int argc, const char **argv);
 void preprocess(void);
-void assemble(void);
+uint16_t assemble(void);
 void assemble_line(char *line, int linenum);
 
 
@@ -81,7 +81,8 @@ int main(int argc, const char **argv)
 		printf("exiting...\n");
 
 	preprocess();
-	assemble();
+	uint16_t wordcnt = assemble();
+	printf("\nAssembly complete (0x%04x words, 0x%04x bytes)\n", wordcnt, wordcnt<<1);
 
 	fclose(fin);
 	fclose(fout);
@@ -182,11 +183,12 @@ void preprocess(void)
 
 #define INSTR_BITS	(16)
 #define OPCODE_BITS	(5)
-void assemble(void)
+uint16_t assemble(void)
 {
 	char inbuf[81];
 	char *buf;
 	int linenum;
+	uint16_t wordcnt = 0x0000;
 
 	fseek(ftemp, 0, SEEK_SET);
 
@@ -208,7 +210,10 @@ void assemble(void)
 		buf = strtok(NULL, "|");
 
 		assemble_line(buf, linenum);
+		wordcnt++;
 	}
+
+	return wordcnt;
 }
 
 void assemble_line(char *line, int linenum)
