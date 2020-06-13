@@ -202,8 +202,10 @@ void preprocess(void)
 #define OPCODE_BITS	(5)
 uint16_t assemble(void)
 {
-	char inbuf[161];
-	char *buf;
+	//char inbuf[161];
+	//char *buf;
+	char orig[161], buf[161];
+	char *bp;
 	int linenum;
 	uint16_t wordcnt = 0x0000;
 	char machine[INSTR_BITS+1];
@@ -213,23 +215,28 @@ uint16_t assemble(void)
 	while(1)
 	{
 		//read next line
-		fgets(inbuf, 160, ftemp);
+		fgets(buf, 160, ftemp);
 		
 		if(feof(ftemp))
 			break;
 
-		if(strlen(inbuf) == 0)
+		if(strlen(buf) == 0)
 			assert(0);
 			//continue;
 
 		//remove line number
-		buf = strtok(inbuf, "|");
+		/*buf = strtok(inbuf, "|");
 		linenum = strtol(buf, NULL, 10);
-		buf = strtok(NULL, "|");
+		buf = strtok(NULL, "|");*/
+		//strcpy(buf, inbuf);
+		bp = strtok(buf, "|");
+		linenum = strtol(bp, NULL, 10);
+		bp = strtok(NULL, "|");
+		strcpy(orig, bp);
 
-		assemble_line(machine, buf, linenum);
-		print_machine(stdout, machine, wordcnt, buf, PRETTY);
-		print_machine(fout, machine, wordcnt, buf, VHDL);
+		assemble_line(machine, bp, linenum);
+		print_machine(stdout, machine, wordcnt, orig, PRETTY);
+		print_machine(fout, machine, wordcnt, orig, VHDL);
 
 		wordcnt++;
 	}
@@ -381,7 +388,7 @@ void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_f
 		if(!i) break;
 	}
 	if(fmt==VHDL) fprintf(stream, "\",\t\t--%s", src);
-	fputc('\n', stream);
+	if (fmt!=VHDL) fputc('\n', stream);
 }
 
 typedef struct label_s
