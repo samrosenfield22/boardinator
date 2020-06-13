@@ -19,6 +19,14 @@ FILE *fin, *fout, *ftemp;
 bool parse_cmd_args(int argc, const char **argv);
 void preprocess(void);
 void assemble(void);
+
+
+void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum);
+void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum);
+void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum);
+void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum);
+void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum);
+
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);
 void print_machine(FILE *stream, char *word, bool print_pretty);
 //void bail(const char *msg);
@@ -26,6 +34,41 @@ void store_label(const char *name, uint16_t addr);
 uint16_t search_label(const char *name);
 void binstring(char *strbuf, int bin, int bits);
 uint8_t mnemonic_to_opcode(const char *mnemonic);
+
+
+
+typedef struct mnem_entry_s
+{
+	const char *mnem;
+	void (*format)(char *machine, char *arg0, char *arg1, int linenum);
+} mnem_entry;
+
+mnem_entry mnemonic_table[] =
+{
+	{"set", format_machine_dst_literal},
+
+	{"mov", format_machine_dst_src},
+	{"add", format_machine_dst_src},
+	{"sub", format_machine_dst_src},
+	{"xor", format_machine_dst_src},
+	{"and", format_machine_dst_src},
+	{"or", format_machine_dst_src},
+	{"cmp", format_machine_dst_src},
+
+	{"not", format_machine_single_op},
+	{"push", format_machine_single_op},
+	{"pop", format_machine_single_op},
+
+	{"jmp", format_machine_jmp},
+	{"jeq", format_machine_jmp},
+	{"jne", format_machine_jmp},
+	{"jgt", format_machine_jmp},
+	{"jlt", format_machine_jmp},
+
+	{"setsfr", format_machine_sfr},
+	{"getsfr", format_machine_sfr}
+};
+
 
 int main(int argc, const char **argv)
 {
@@ -68,8 +111,6 @@ bool parse_cmd_args(int argc, const char **argv)
 	return true;
 }
 
-//mov r0,r1
-//
 
 //remove comments and empty lines
 void preprocess(void)
@@ -92,12 +133,11 @@ void preprocess(void)
 		//remove comments, search for reserved characters
 		for(char *p=buf; p<buf+80; p++)
 		{
-			/*if(*p=='\0')
-				goto next_line;
-			else*/ if(*p=='|')
+			if(*p=='\0')
+				break;
+			else if(*p=='|')
 			{
 				printf("buf:\n%s\n", buf);
-				printf("buf has len %d, p at %d\n", strlen(buf), p-buf);
 				bail("found illegal character \'|\'");
 			}
 			else if(*p==';')
@@ -119,9 +159,8 @@ void preprocess(void)
 
 		if(strlen(buf) > 1)	//this should remove empty lines -- right now it only gets rid of "\n"
 			fprintf(ftemp, "%d|%s", linenum, buf);
-			//fputs(buf, ftemp);
 
-		instr_addr += 2;
+		instr_addr++;
 		next_line:
 		linenum++;
 	}
@@ -134,7 +173,7 @@ void assemble(void)
 	char inbuf[81], binbuf[OPCODE_BITS+1], machine[INSTR_BITS+1];
 	char *buf;
 	int linenum;
-	char *mnem, *arg1, *arg2;
+	char *mnem, *arg0, *arg1;
 	fseek(ftemp, 0, SEEK_SET);
 
 	while(1)
@@ -156,13 +195,13 @@ void assemble(void)
 
 		printf("read line %d: %s", linenum, buf);
 
-		tokenize_asm(&mnem, &arg1, &arg2, buf);
+		tokenize_asm(&mnem, &arg0, &arg1, buf);
 
 		int opcode = mnemonic_to_opcode(mnem);
 		binstring(binbuf, opcode, OPCODE_BITS);
 		printf("\tmnemonic: %s (opcode %d)\n", mnem, opcode);
-		printf("\targ 1: %s\n", arg1);
-		printf("\targ 2: %s\n", arg2);
+		printf("\targ 1: %s\n", arg0);
+		printf("\targ 2: %s\n", arg1);
 
 		//for testing, initialize machine code word to a bad value
 		for(int i=0; i<INSTR_BITS; i++)
@@ -171,60 +210,70 @@ void assemble(void)
 		//set opcode
 		binstring(machine+INSTR_BITS-OPCODE_BITS, opcode, OPCODE_BITS);
 		
-		if(opcode == 0)	//dst/literal format: cccccddd llllllll
-		{
-			if(arg1[0] != 'r') bail("line %d: expected register as argument", linenum);
-			int dst = arg1[1] - '0';
-			binstring(machine+8, dst, 3);
+		//format the rest of the machine word
+		mnemonic_table[opcode].format(machine, arg0, arg1, linenum);
 
-			int lit = strtol(arg2, NULL, 0);	
-			binstring(machine, lit, 8);
-		}
-		else if(opcode<=7)	//src/dst format: cccccddd 00000sss
-		{
-			if(arg1[0] != 'r') {printf("ruh roh!\n"); exit(-1);}
-			int dst = arg1[1] - '0';
-			binstring(machine+8, dst, 3);
-
-			if(arg2[0] != 'r') {printf("error: expected register as dest argument to %s\n", mnem); exit(-1);};
-			int src = arg2[1] - '0';
-			binstring(machine, src, 3);
-		}
-		else if(opcode<=10)	//single-operand format: cccccddd 00000000
-		{
-			if(arg1[0] != 'r') bail("expected register as argument");
-			int dst = arg1[1] - '0';
-			binstring(machine+8, dst, 3);
-		}
-		else if(opcode<=15)	//jumps. format: ccccc0aa aaaaaaaa (10-bit instruction addr)
-		{
-			//jmp LABEL
-			uint16_t addr = search_label(arg1);
-			printf("\t\t found label %s!!\n", arg1);
-			//int addr = strtol(arg1, NULL, 0);
-			binstring(machine, addr, 10);
-		}
-		else if(opcode<=17)	//sfr-access: cccccrrr ssssssss (8-bit sfr addr)
-		{
-			//look up SFR name in table
-			//for now we'll pretend like a literal was passed
-			
-			//the register comes first either way:
-			//setsfr r0, MEMCTL
-			//getsfr r0, MEMCTL
-			if(arg1[0] != 'r') bail("expected register as argument");
-			int dst = arg1[1] - '0';
-			binstring(machine+8, dst, 3);
-
-			int addr = strtol(arg2, NULL, 0);
-			binstring(machine, addr, 8);
-		}
-		else assert(0);
-
+		//output machine code
 		putchar('\t'); print_machine(stdout, machine, true);
 		print_machine(fout, machine, false);
 	}
 
+}
+
+void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum)
+{
+	if(arg0[0] != 'r') bail("line %d: expected register as argument", linenum);
+	int dst = arg0[1] - '0';
+	binstring(machine+8, dst, 3);
+
+	int lit = strtol(arg1, NULL, 0);	
+	binstring(machine, lit, 8);
+}
+
+void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum)
+{
+
+	if(arg0[0] != 'r') {printf("ruh roh!\n"); exit(-1);}
+	int dst = arg0[1] - '0';
+	binstring(machine+8, dst, 3);
+
+	//if(arg1[0] != 'r') {printf("error: expected register as dest argument to %s\n", mnem); exit(-1);};
+	if(arg1[0] != 'r') {printf("error: expected register as dest argument\n"); exit(-1);};
+	int src = arg1[1] - '0';
+	binstring(machine, src, 3);
+}
+
+
+void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum)
+{
+	if(arg0[0] != 'r') bail("expected register as argument");
+	int dst = arg0[1] - '0';
+	binstring(machine+8, dst, 3);
+}
+
+void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum)
+{
+	uint16_t addr = search_label(arg0);
+	printf("\t\t found label %s!!\n", arg0);
+	//int addr = strtol(arg0, NULL, 0);
+	binstring(machine, addr, 10);
+}
+
+void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
+{
+
+	//look up SFR name in table
+	//for now we'll pretend like a literal was passed
+			
+	//the register comes first either way:
+	//setsfr r0, MEMCTL
+	//getsfr r0, MEMCTL
+	if(arg0[0] != 'r') bail("expected register as argument");
+	int dst = arg0[1] - '0';
+	binstring(machine+8, dst, 3);
+
+	int addr = strtol(arg1, NULL, 0);
+	binstring(machine, addr, 8);
 }
 
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
@@ -234,9 +283,10 @@ void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
 	*arg2 = strtok(NULL, " \t\n");
 }
 
+/*
 const char *mnemonic_table[] =
 {
-	//0: literal instructions	cccccddd llllllll
+	//0: literal instructions	set r0,0x55	cccccddd llllllll
 	"set",
 
 	//1-7: src/dst instructions	cccccddd 00000sss
@@ -264,7 +314,7 @@ const char *mnemonic_table[] =
 	"setsfr",
 	"getsfr"
 };
-
+*/
 /*const char *pseudoinstruction_table[][2] =
 {
 	"clr r", "xor r,r"
@@ -274,7 +324,7 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 {
 	for(int i=0; i<(sizeof(mnemonic_table)/sizeof(mnemonic_table[0])); i++)
 	{
-		if(strcmp(mnemonic, mnemonic_table[i])==0)
+		if(strcmp(mnemonic, mnemonic_table[i].mnem)==0)
 			return i;
 	}
 
