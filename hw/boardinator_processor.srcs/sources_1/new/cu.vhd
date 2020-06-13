@@ -95,6 +95,15 @@ begin
                             elsif(op_int="01100") then  --jeq
                                 if(flags(0)='1') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
+                            elsif(op_int="01101") then  --jne
+                                if(flags(0)='0') then jmp_condition <= '1';
+                                else jmp_condition <= '0'; end if;
+                            elsif(op_int="01110") then  --jgt
+                                if(flags(1)='1' and flags(0)='0') then jmp_condition <= '1';
+                                else jmp_condition <= '0'; end if;
+                            elsif(op_int="01111") then  --jlt
+                                if(flags(1)='0' and flags(0)='0') then jmp_condition <= '1';
+                                else jmp_condition <= '0'; end if;
                             end if;
                             
 --                            if(jmp_condition = '1') then
