@@ -48,13 +48,15 @@ architecture Behavioral of processor is
            lit : in STD_LOGIC_VECTOR (7 downto 0);
            en : in STD_LOGIC;
            
-           out_word : out STD_LOGIC_VECTOR (7 downto 0));
+           out_word : out STD_LOGIC_VECTOR (7 downto 0);
+           flags : out STD_LOGIC_VECTOR(1 downto 0));
      end component;
      
      component cu
      Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
             rst : in STD_LOGIC;
             clk : in STD_LOGIC;
+            flags : in STD_LOGIC_VECTOR(1 downto 0);
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
@@ -70,7 +72,7 @@ architecture Behavioral of processor is
      signal dst, src : STD_LOGIC_VECTOR (2 downto 0);
      signal lit : STD_LOGIC_VECTOR (7 downto 0);
      signal data_en: std_logic;
-     
+     signal flags : STD_LOGIC_VECTOR(1 downto 0);
 
 begin
     data_path: datapath port map (
@@ -81,13 +83,15 @@ begin
         clk => clk,
         lit => lit,
         en => data_en,
-        out_word => open
+        out_word => open,
+        flags => flags
     );
     
     control: cu port map (
         instr_in => temporary_processor_instr_input,
         rst => rst,
         clk => clk,
+        flags => flags,
         op => op,
         dst => dst,
         src => src,

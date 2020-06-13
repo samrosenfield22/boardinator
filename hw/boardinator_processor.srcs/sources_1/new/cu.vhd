@@ -35,6 +35,7 @@ entity cu is
     Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
             rst : in STD_LOGIC;
             clk : in STD_LOGIC;
+            flags : in STD_LOGIC_VECTOR(1 downto 0);
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
@@ -45,11 +46,14 @@ end cu;
 
 architecture Behavioral of cu is
 
-type cu_state_t is (fetch, decode, pause, execute);
+type cu_state_t is (fetch, decode, pause, load_next, execute);
 signal cu_state: cu_state_t := fetch;
 
 signal ir: std_logic_vector(15 downto 0);
-signal pc: std_logic_vector(9 downto 0);
+signal pc, next_pc: std_logic_vector(9 downto 0);
+signal op_int: std_logic_vector(4 downto 0);
+signal addr_sig: std_logic_vector(9 downto 0);
+signal jmp_condition: std_logic;
 
 begin
     
@@ -68,16 +72,51 @@ begin
                         ir <= instr_in;
                         cu_state <= decode;
                     when decode =>
-                        op <= ir(15 downto 11);
+                        op_int <= ir(15 downto 11);
                         dst <= ir(10 downto 8);
                         src <= ir(2 downto 0);
                         lit <= ir(7 downto 0);
+                        addr_sig <= ir(9 downto 0);
                         cu_state <= pause;
                     when pause =>
-                        data_en <= '1';
-                        cu_state <= execute;
+                        if(unsigned(op_int) < 7) then  --ALU operation
+                            data_en <= '1';
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
+                            jmp_condition <= '0';
+                        elsif(unsigned(op_int) = 7) then     --cmp
+                            data_en <= '0';
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
+                            jmp_condition <= '0';
+                        else    --jmp operations
+                            data_en <= '0';
+                            
+                            if(op_int="01011") then --jmp
+                                jmp_condition <= '1';
+                            elsif(op_int="01100") then  --jeq
+                                if(flags(0)='1') then jmp_condition <= '1';
+                                else jmp_condition <= '0'; end if;
+                            end if;
+                            
+--                            if(jmp_condition = '1') then
+--                                next_pc <= addr_sig;
+--                            else
+--                                next_pc <= std_logic_vector(unsigned(pc) + 1);
+--                            end if;
+                        end if;
+                        
+                        cu_state <= load_next;
+                    when load_next =>
+                        if(jmp_condition = '1') then
+                            --next_pc <= addr_sig;
+                            pc <= addr_sig;
+                        else
+                            --next_pc <= std_logic_vector(unsigned(pc) + 1);
+                            pc <= std_logic_vector(unsigned(pc) + 1);
+                        end if;
+                        data_en <= '0';
+                        cu_state <= fetch;
                     when execute =>
-                        pc <= std_logic_vector(unsigned(pc) + 1);
+                        pc <= next_pc;
                         data_en <= '0';
                         cu_state <= fetch;
                     when others =>
@@ -89,5 +128,6 @@ begin
     end process;
     
     pc_out <= pc;
+    op <= op_int;
 
 end Behavioral;

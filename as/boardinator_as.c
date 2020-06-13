@@ -11,6 +11,7 @@
 #define TEMPFILE "tempfile.asm"
 
 #define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
+//#define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); dump_labels(); exit(-1);} while(0)
 
 typedef enum
 {
@@ -41,6 +42,7 @@ void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);
 void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_fmt fmt);
 void store_label(const char *name, uint16_t addr);
 uint16_t search_label(const char *name);
+void dump_labels(void);
 void binstring(char *strbuf, int bin, int bits);
 uint8_t mnemonic_to_opcode(const char *mnemonic);
 bool is_whitespace(const char *str);
@@ -167,10 +169,16 @@ void preprocess(void)
 					break;
 				case ':':
 					*p = '\0';
-					printf("found label %s at addr 0x%04x\n", buf, instr_addr);
+
+					//move past leading whitespace
+					p = buf;
+					while(*p==' ' || *p == '\t' || *p == '\n') {p++;}
+					if(*p)
+					{
+						printf("found label \'%s\' at addr 0x%04x\n", p, instr_addr);
+						store_label(p, instr_addr);
+					}
 					
-					//add it to the structure
-					store_label(buf, instr_addr);
 
 					goto next_line;
 			}
@@ -324,7 +332,7 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
 {
 	*mnem = strtok(code, " \t\n");
-	*arg1 = strtok(NULL, " \t,");
+	*arg1 = strtok(NULL, " \t\n,");
 	*arg2 = strtok(NULL, " \t\n");
 }
 
@@ -362,7 +370,7 @@ void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_f
 	fputc('\n', stream);*/
 
 
-	if(fmt==VHDL) fprintf(stream, "\t%d => \"", addr);
+	if(fmt==VHDL) fprintf(stream, "\t\t%d => \"", addr);
 	for(int i=INSTR_BITS-1; ; i--)
 	{
 		fputc(word[i], stream);
@@ -405,7 +413,16 @@ uint16_t search_label(const char *name)
 		}
 	}
 
-	bail("missing label %s", name);
+	bail("missing label \'%s\'", name);
+}
+
+void dump_labels(void)
+{
+	printf("-------------------------\ndumping symbol table:\n");
+	for(int i=0; i<label_cnt; i++)
+	{
+		printf("\'%s\'\t\t0x%04x\n", known_labels[i].name, known_labels[i].addr);
+	}
 }
 
 void binstring(char *strbuf, int bin, int bits)

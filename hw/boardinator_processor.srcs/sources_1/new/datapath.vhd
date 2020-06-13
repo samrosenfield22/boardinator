@@ -35,7 +35,8 @@ entity datapath is
            lit : in STD_LOGIC_VECTOR (7 downto 0);
            en : in STD_LOGIC;
            
-           out_word : out STD_LOGIC_VECTOR (7 downto 0));
+           out_word : out STD_LOGIC_VECTOR (7 downto 0);
+           flags : out STD_LOGIC_VECTOR(1 downto 0));
 end datapath;
 
 architecture Behavioral of datapath is
@@ -81,7 +82,7 @@ begin
         b => b_sig,
         op => op,
         y => y_sig,
-        flags => open
+        flags => flags
     );
     
     --register file input mux (selects between ALU Y and literal

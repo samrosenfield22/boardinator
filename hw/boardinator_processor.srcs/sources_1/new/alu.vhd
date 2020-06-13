@@ -81,6 +81,8 @@ begin
             else
                 flags_int(1) <= '0';
             end if;
+            
+            --flags <= flags_int;
         end if;
     end process;
     
@@ -88,6 +90,5 @@ begin
     y <= mux_out;
     flags <= flags_int;
     
-    --flags <= "00";
 
 end Behavioral;
