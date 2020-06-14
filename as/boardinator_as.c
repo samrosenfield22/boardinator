@@ -296,7 +296,7 @@ void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linen
 void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum)
 {
 
-	if(arg0[0] != 'r') {printf("ruh roh!\n"); exit(-1);}
+	if(arg0[0] != 'r') {printf("ruh roh! problem on line %d\n", linenum); exit(-1);}
 	int dst = arg0[1] - '0';
 	binstring(machine+8, dst, 3);
 
