@@ -89,30 +89,30 @@ begin
                         elsif(unsigned(op_int) = 7) then     --cmp
                             data_en <= '0';
                             jmp_condition <= '0';
-                        elsif(unsigned(op_int) < 16) then    --jmp operations
+                        elsif(unsigned(op_int) < 14) then    --jmp operations
                             data_en <= '0';
                             
-                            if(op_int="01011") then --jmp
+                            if(op_int="01001") then --jmp
                                 jmp_condition <= '1';
-                            elsif(op_int="01100") then  --jeq
+                            elsif(op_int="01010") then  --jeq
                                 if(flags(0)='1') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01101") then  --jne
+                            elsif(op_int="01011") then  --jne
                                 if(flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01110") then  --jgt
+                            elsif(op_int="01100") then  --jgt
                                 if(flags(1)='1' and flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01111") then  --jlt
+                            elsif(op_int="01101") then  --jlt
                                 if(flags(1)='0' and flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
                             end if;
                             
 
-                        elsif(unsigned(op_int) < 18) then   --stack operations
+                        elsif(unsigned(op_int) < 16) then   --stack operations
                             
                             jmp_condition <= '0';
-                            if(unsigned(op_int) = 16) then  --setstk
+                            if(unsigned(op_int) = 14) then  --setstk
                                 --stack_addr <= ir(10 downto 8);
                                 stack_we <= '1';
                                 data_en <= '0';

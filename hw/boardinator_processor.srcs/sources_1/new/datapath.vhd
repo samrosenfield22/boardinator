@@ -113,7 +113,7 @@ begin
     begin
         if(op="00000") then
             rf_in <= lit;
-        elsif(op="10000" or op="10001") then
+        elsif(op="01110" or op="01111") then
             rf_in <= stack_output;
         else
             rf_in <= y_sig;

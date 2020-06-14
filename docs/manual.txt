@@ -30,17 +30,15 @@ opcode	mnemonic	op0	op1			machine code		example				description
 00110	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
 00111	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)
 01000	not			dst 			01000ddd 00000000	not r0				dst != dst
-01001	push		dst 			01001ddd 00000000	push r0				*sp++ = r0 (UNIMPLEMENTED)
-01010	pop			dst 			01010ddd 00000000	pop r0				r0 = *--sp (UNIMPLEMENTED)
-01011	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
-01100	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
-01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
-01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
-01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
-10000	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
-10001	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
-10010	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
-10011	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
+01001	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
+01010	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
+01011	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
+01100	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
+01101	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
+01110	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
+01111	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
+10000	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
+10001	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
 
 Flags:
 EF (equal flag): set when cmp operands are equal
