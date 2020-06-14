@@ -41,7 +41,10 @@ entity cu is
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
             lit : out STD_LOGIC_VECTOR (7 downto 0);
             data_en : out STD_LOGIC;
-            pc_out : out STD_LOGIC_VECTOR (9 downto 0));
+            pc_out : out STD_LOGIC_VECTOR (9 downto 0);
+            
+            stack_we : out STD_LOGIC);
+            --stack_addr : out STD_LOGIC_VECTOR(7 downto 0));
 end cu;
 
 architecture Behavioral of cu is
@@ -64,6 +67,7 @@ begin
             ir <= "0000000000000000";
             pc <= "0000000000";
             data_en <= '0';
+            stack_we <= '0';
         else
             if(clk'event and clk='0') then
                 case cu_state is
@@ -81,13 +85,11 @@ begin
                     when pause =>
                         if(unsigned(op_int) < 7) then  --ALU operation
                             data_en <= '1';
-                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                             jmp_condition <= '0';
                         elsif(unsigned(op_int) = 7) then     --cmp
                             data_en <= '0';
-                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                             jmp_condition <= '0';
-                        else    --jmp operations
+                        elsif(unsigned(op_int) < 16) then    --jmp operations
                             data_en <= '0';
                             
                             if(op_int="01011") then --jmp
@@ -106,12 +108,21 @@ begin
                                 else jmp_condition <= '0'; end if;
                             end if;
                             
---                            if(jmp_condition = '1') then
---                                next_pc <= addr_sig;
---                            else
---                                next_pc <= std_logic_vector(unsigned(pc) + 1);
---                            end if;
+
+                        elsif(unsigned(op_int) < 18) then   --stack operations
+                            
+                            jmp_condition <= '0';
+                            if(unsigned(op_int) = 16) then  --setstk
+                                --stack_addr <= ir(10 downto 8);
+                                stack_we <= '1';
+                                data_en <= '0';
+                            else    --getstk
+                                --stack_addr <= ir(2 downto 0);
+                                stack_we <= '0';
+                                data_en <= '1';
+                            end if;
                         end if;
+                        
                         
                         cu_state <= load_next;
                     when load_next =>
@@ -123,6 +134,7 @@ begin
                             pc <= std_logic_vector(unsigned(pc) + 1);
                         end if;
                         data_en <= '0';
+                        stack_we <= '0';
                         cu_state <= fetch;
                     when execute =>
                         pc <= next_pc;

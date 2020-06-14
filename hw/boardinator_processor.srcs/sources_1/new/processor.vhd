@@ -48,6 +48,9 @@ architecture Behavioral of processor is
            lit : in STD_LOGIC_VECTOR (7 downto 0);
            en : in STD_LOGIC;
            
+           stack_we : in STD_LOGIC;
+           --stack_addr : in STD_LOGIC_VECTOR(7 downto 0);
+           
            out_word : out STD_LOGIC_VECTOR (7 downto 0);
            flags : out STD_LOGIC_VECTOR(1 downto 0));
      end component;
@@ -62,17 +65,20 @@ architecture Behavioral of processor is
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
             lit : out STD_LOGIC_VECTOR (7 downto 0);
             data_en : out STD_LOGIC;
-            pc_out : out STD_LOGIC_VECTOR (9 downto 0)
+            pc_out : out STD_LOGIC_VECTOR (9 downto 0);
+            
+            stack_we : out STD_LOGIC
+            --stack_addr : out STD_LOGIC_VECTOR(7 downto 0)
             );
      end component;
-     
-     --component prog_rom
      
      signal op: std_logic_vector(4 downto 0);
      signal dst, src : STD_LOGIC_VECTOR (2 downto 0);
      signal lit : STD_LOGIC_VECTOR (7 downto 0);
      signal data_en: std_logic;
      signal flags : STD_LOGIC_VECTOR(1 downto 0);
+     signal stack_we : std_logic;
+     signal stack_addr : std_logic_vector(7 downto 0);
 
 begin
     data_path: datapath port map (
@@ -83,6 +89,8 @@ begin
         clk => clk,
         lit => lit,
         en => data_en,
+        stack_we => stack_we,
+        --stack_addr => stack_addr,
         out_word => open,
         flags => flags
     );
@@ -97,7 +105,12 @@ begin
         src => src,
         lit => lit,
         data_en => data_en,
-        pc_out => pc_out
+        pc_out => pc_out,
+        
+        stack_we => stack_we
+        --stack_addr => stack_addr
     );
+    
+    
 
 end Behavioral;

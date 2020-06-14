@@ -77,8 +77,11 @@ mnem_entry mnemonic_table[] =
 	{"jgt", format_machine_jmp},
 	{"jlt", format_machine_jmp},
 
-	{"setsfr", format_machine_sfr},
-	{"getsfr", format_machine_sfr}
+	{"setstk", format_machine_dst_src},
+	{"getstk", format_machine_dst_src}
+
+	//{"setsfr", format_machine_sfr},
+	//{"getsfr", format_machine_sfr}
 };
 /*const char *pseudoinstruction_table[][2] =
 {

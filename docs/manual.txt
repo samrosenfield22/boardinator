@@ -37,8 +37,10 @@ opcode	mnemonic	op0	op1			machine code		example				description
 01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
 01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
 01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
-10000	setsfr 		reg sfr			10000rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
-10001	getsfr 		reg sfr 		10000rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
+10000	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
+10001	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
+10010	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
+10011	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
 
 Flags:
 EF (equal flag): set when cmp operands are equal

@@ -91,15 +91,27 @@ begin
     reg_ins <= (others => in_word);
     
     --set output a
-    out_a <=    reg_outs(0) when a_addr="000" else
-                reg_outs(1) when a_addr="001" else
-                reg_outs(2) when a_addr="010" else
-                reg_outs(3) when a_addr="011" else
-                reg_outs(4) when a_addr="100" else
-                reg_outs(5) when a_addr="101" else
-                reg_outs(6) when a_addr="110" else
-                reg_outs(7);
-    
+--    out_a <=    reg_outs(0) when a_addr="000" else
+--                reg_outs(1) when a_addr="001" else
+--                reg_outs(2) when a_addr="010" else
+--                reg_outs(3) when a_addr="011" else
+--                reg_outs(4) when a_addr="100" else
+--                reg_outs(5) when a_addr="101" else
+--                reg_outs(6) when a_addr="110" else
+--                reg_outs(7);
+    process(reg_outs, a_addr)
+    begin
+        if(a_addr="000") then out_a <= reg_outs(0);
+        elsif(a_addr="001") then out_a <= reg_outs(1);
+        elsif(a_addr="010") then out_a <= reg_outs(2);
+        elsif(a_addr="011") then out_a <= reg_outs(3);
+        elsif(a_addr="100") then out_a <= reg_outs(4);
+        elsif(a_addr="101") then out_a <= reg_outs(5);
+        elsif(a_addr="110") then out_a <= reg_outs(6);
+        else out_a <= reg_outs(7);
+        end if;
+    end process;
+
     --set output b
     out_b <=    reg_outs(0) when b_addr="000" else
                 reg_outs(1) when b_addr="001" else
