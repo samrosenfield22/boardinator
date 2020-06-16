@@ -1,21 +1,4 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 06/12/2020 10:33:13 AM
--- Design Name: 
--- Module Name: cu - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
 ----------------------------------------------------------------------------------
 
 
@@ -25,11 +8,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity cu is
     Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
@@ -83,36 +61,36 @@ begin
                         addr_sig <= ir(9 downto 0);
                         cu_state <= pause;
                     when pause =>
-                        if(unsigned(op_int) < 7) then  --ALU operation
+                        if(unsigned(op_int) < 9) then  --ALU operation
                             data_en <= '1';
                             jmp_condition <= '0';
-                        elsif(unsigned(op_int) = 7) then     --cmp
+                        elsif(unsigned(op_int) = 9) then     --cmp
                             data_en <= '0';
                             jmp_condition <= '0';
-                        elsif(unsigned(op_int) < 14) then    --jmp operations
+                        elsif(unsigned(op_int) < 16) then    --jmp operations
                             data_en <= '0';
                             
-                            if(op_int="01001") then --jmp
+                            if(op_int="01011") then --jmp
                                 jmp_condition <= '1';
-                            elsif(op_int="01010") then  --jeq
+                            elsif(op_int="01100") then  --jeq
                                 if(flags(0)='1') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01011") then  --jne
+                            elsif(op_int="01101") then  --jne
                                 if(flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01100") then  --jgt
+                            elsif(op_int="01110") then  --jgt
                                 if(flags(1)='1' and flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
-                            elsif(op_int="01101") then  --jlt
+                            elsif(op_int="01111") then  --jlt
                                 if(flags(1)='0' and flags(0)='0') then jmp_condition <= '1';
                                 else jmp_condition <= '0'; end if;
                             end if;
                             
 
-                        elsif(unsigned(op_int) < 16) then   --stack operations
+                        elsif(unsigned(op_int) < 18) then   --stack operations
                             
                             jmp_condition <= '0';
-                            if(unsigned(op_int) = 14) then  --setstk
+                            if(unsigned(op_int) = 16) then  --setstk
                                 --stack_addr <= ir(10 downto 8);
                                 stack_we <= '1';
                                 data_en <= '0';

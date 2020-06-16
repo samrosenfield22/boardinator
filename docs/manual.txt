@@ -24,8 +24,10 @@ opcode	mnemonic	op0	op1			machine code		example				description
 00000	set			dst	literal		00000ddd llllllll	set r0,0x40			dst = literal (literal can be dec or hex)
 00001	mov			dst src 		00001ddd 00000sss	mov r1,r0			dst = src
 00010	add			dst src 		00010ddd 00000sss	add r1,r0			dst += src
-00011	sub			dst src 		00011ddd 00000sss	sub r1,r0			dst -= src
-00100	xor			dst src 		00100ddd 00000sss	xor r1,r0			dst ^= src
+00011	addl		dst lit 		00011ddd llllllll	addl r0,0x40		dst += literal
+00100	sub			dst src 		00011ddd 00000sss	sub r1,r0			dst -= src
+00101 	subl		dst lit 		00101ddd llllllll	subl r0,1			dst -= lit
+00110	xor			dst src 		00100ddd 00000sss	xor r1,r0			dst ^= src
 00101	and			dst src 		00101ddd 00000sss	and r1,r0			dst &= src
 00110	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
 00111	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)

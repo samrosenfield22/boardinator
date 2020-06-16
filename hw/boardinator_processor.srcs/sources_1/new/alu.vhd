@@ -51,13 +51,16 @@ architecture Behavioral of alu is
     signal flags_int:   std_logic_vector(1 downto 0) := (others => '0');
     --etc
 begin
-    mux_out <=  b when op="00001" else              --mov
+    mux_out <=  b when op="00000" else              --set
+                b when op="00001" else              --mov
                 adder_out when op="00010" else      --add
-                subt_out when op="00011" else       --sub
-                xor_out when op="00100" else        --xor
-                and_out when op="00101" else        --and
-                or_out when op="00110" else         --or
-                "00000000" when op="00111" else     --cmp (only sets flags)
+                adder_out when op="00011" else      --addl
+                subt_out when op="00100" else       --sub
+                subt_out when op="00101" else       --subl
+                xor_out when op="00110" else        --xor
+                and_out when op="00111" else        --and
+                or_out when op="01000" else         --or
+                "00000000" when op="01001" else     --cmp (only sets flags)
                 "00000000";
 
     adder_out <= std_logic_vector(unsigned(a) + unsigned(b));
@@ -69,7 +72,7 @@ begin
     --flags
     process(a,b,op)
     begin
-        if(op = "00111") then   --cmp
+        if(op = "01001") then   --cmp
             if(a=b) then
                 flags_int(0) <= '1';
             else

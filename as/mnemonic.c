@@ -9,7 +9,9 @@ mnem_entry mnemonic_table[] =
 
 	{"mov", format_machine_dst_src},
 	{"add", format_machine_dst_src},
+	{"addl", format_machine_dst_literal},
 	{"sub", format_machine_dst_src},
+	{"subl", format_machine_dst_literal},
 	{"xor", format_machine_dst_src},
 	{"and", format_machine_dst_src},
 	{"or", format_machine_dst_src},
@@ -33,7 +35,19 @@ mnem_entry mnemonic_table[] =
 mnem_entry pseudoinstruction_table[] =
 {
 	{"push", push_pseudoinstruction},
-	{"pop", pop_pseudoinstruction}
+	{"pop", pop_pseudoinstruction},
+	{"mklcl", mklcl_pseudoinstruction},
+	{"setlcl", setlcl_pseudoinstruction},
+	{"getlcl", getlcl_pseudoinstruction},
+	{"call", call_pseudoinstruction},
+	{"enter", enter_pseudoinstruction},
+	{"leave", leave_pseudoinstruction},
+	{"ret", ret_pseudoinstruction},
+	{"clean", clean_pseudoinstruction},
+	{"getarg", getarg_pseudoinstruction},
+	//{"", _pseudoinstruction},
+	
+	
 };
 
 uint8_t mnemonic_to_opcode(const char *mnemonic)
@@ -120,18 +134,103 @@ void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 	FILE *fp = (FILE *)machine;
 
 	fprintf(fp, "%d|setstk\tr6,%s\n", linenum, arg0);
-	fprintf(fp, "%d|set\tr5,1\n", linenum);
-	fprintf(fp, "%d|add\tr6,r5\n", linenum);
+	fprintf(fp, "%d|addl\tr6,1\n", linenum);
 }
 
 void pop_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 {
 	FILE *fp = (FILE *)machine;
 
-	fprintf(fp, "%d|set\tr5,1\n", linenum);
-	fprintf(fp, "%d|sub\tr6,r5\n", linenum);
-	fprintf(fp, "%d|set\t%s,r6\n", linenum, arg0);
+	fprintf(fp, "%d|subl\tr6,1\n", linenum);
+	fprintf(fp, "%d|getstk\t%s,r6\n", linenum, arg0);
 }
+
+void mklcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	fprintf(fp, "%d|addl\tr6,%s\n", linenum, arg0);
+}
+
+void setlcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	//setlcl ofs,reg
+	fprintf(fp, "%d|addl\tr7,%s\n", linenum, arg0);
+	fprintf(fp, "%d|setstk\tr7,%s\n", linenum, arg1);
+	fprintf(fp, "%d|subl\tr7,%s\n", linenum, arg0);
+}
+
+void getlcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	//getlcl reg,ofs
+	fprintf(fp, "%d|addl\tr7,%s\n", linenum, arg1);
+	fprintf(fp, "%d|getstk\t%s,r7\n", linenum, arg0);
+	fprintf(fp, "%d|subl\tr7,%s\n", linenum, arg1);
+}
+
+void call_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	//FILE *fp = (FILE *)machine;
+
+	
+}
+
+void enter_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	//push bp
+	fprintf(fp, "%d|setstk\tr6,r7\n", linenum);
+	fprintf(fp, "%d|addl\tr6,1\n", linenum);
+
+	//set bp, sp
+	fprintf(fp, "%d|mov\tr7,r6\n", linenum);
+}
+
+void leave_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	//set sp, bp
+	fprintf(fp, "%d|mov\tr6,r7\n", linenum);
+
+	//pop bp
+	fprintf(fp, "%d|subl\tr6,1\n", linenum);
+	fprintf(fp, "%d|set\tr7,r6\n", linenum);
+}
+
+void ret_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	//FILE *fp = (FILE *)machine;
+
+	
+}
+
+void clean_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	//FILE *fp = (FILE *)machine;
+
+	
+}
+
+void getarg_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
+{
+	FILE *fp = (FILE *)machine;
+
+	//locals start at bp-3
+	int ofs = strtol(arg1, NULL, 0);	
+	ofs += 3;
+
+	//getarg reg,lcl
+	fprintf(fp, "%d|subl\tr7,%d\n", linenum, ofs);
+	fprintf(fp, "%d|getstk\t%s,r7\n", linenum, arg0);
+	fprintf(fp, "%d|addl\tr7,%d\n", linenum, ofs);
+}
+
 
 
 void binstring(char *strbuf, int bin, int bits)

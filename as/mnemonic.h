@@ -19,6 +19,17 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum);
 
 void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void pop_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void mklcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void setlcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void getlcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void call_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void enter_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void leave_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void ret_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void clean_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+void getarg_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+
+
 
 void binstring(char *strbuf, int bin, int bits);
 
