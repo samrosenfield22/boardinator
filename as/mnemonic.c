@@ -16,8 +16,6 @@ mnem_entry mnemonic_table[] =
 	{"cmp", format_machine_dst_src},
 
 	{"not", format_machine_single_op},
-	//{"push", format_machine_single_op},
-	//{"pop", format_machine_single_op},
 
 	{"jmp", format_machine_jmp},
 	{"jeq", format_machine_jmp},
@@ -128,7 +126,11 @@ void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 
 void pop_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 {
+	FILE *fp = (FILE *)machine;
 
+	fprintf(fp, "%d|set\tr5,1\n", linenum);
+	fprintf(fp, "%d|sub\tr6,r5\n", linenum);
+	fprintf(fp, "%d|set\t%s,r6\n", linenum, arg0);
 }
 
 
