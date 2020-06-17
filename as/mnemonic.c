@@ -27,7 +27,10 @@ mnem_entry mnemonic_table[] =
 	{"jovf", format_machine_jmp},
 
 	{"setstk", format_machine_dst_src},
-	{"getstk", format_machine_dst_src}
+	{"getstk", format_machine_dst_src},
+
+	{"getpcl", format_machine_single_op},
+	{"getpch", format_machine_single_op}
 
 	//{"setsfr", format_machine_sfr},
 	//{"getsfr", format_machine_sfr}

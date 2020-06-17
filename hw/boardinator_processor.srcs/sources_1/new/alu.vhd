@@ -62,6 +62,9 @@ begin
                 and_out when op="00111" else        --and
                 or_out when op="01000" else         --or
                 "00000000" when op="01001" else     --cmp (only sets flags)
+                --...
+                b when op="10011" else              --setpcl
+                b when op="10100" else              --setpch
                 "00000000";
 
     adder_out <= std_logic_vector(unsigned(a) + unsigned(b));

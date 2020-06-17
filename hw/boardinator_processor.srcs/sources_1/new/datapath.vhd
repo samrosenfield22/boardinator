@@ -105,15 +105,14 @@ begin
 --        end if;
 --    end process;
 
-    --alu b input
+    --alu b input is a literal for instructions:
+    --set, addl, subl, getpcl, getpch
     process(op, lit, b_sig)
     begin
-        if(op="00000" or op="00011" or op="00101") then
+        if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
             alu_b_in <= lit;
-            --alu_b_in <= "00000000";
         else
             alu_b_in <= b_sig;
-            --alu_b_in <= b_sig;
         end if;
     end process;
     

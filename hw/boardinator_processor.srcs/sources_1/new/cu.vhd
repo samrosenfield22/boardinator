@@ -9,6 +9,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+--use work.opcodes.all;
+
 entity cu is
     Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
             rst : in STD_LOGIC;
@@ -22,7 +24,6 @@ entity cu is
             pc_out : out STD_LOGIC_VECTOR (9 downto 0);
             
             stack_we : out STD_LOGIC);
-            --stack_addr : out STD_LOGIC_VECTOR(7 downto 0));
 end cu;
 
 architecture Behavioral of cu is
@@ -95,11 +96,13 @@ begin
                                 stack_we <= '0';
                                 data_en <= '1';
                             end if;
-                        --else illegal operand
+                        elsif(unsigned(op_int) < 21) then   --getpcl/h
+                            data_en <= '1';
+                            pc <= std_logic_vector(unsigned(pc) + 1);
+                        
                         end if;
                         
                         cu_state <= fetch;
-                    
                     when others =>
                         --ruh roh
                 end case;
@@ -111,10 +114,15 @@ begin
     op_int <= ir(15 downto 11);
     dst <= ir(10 downto 8);
     src <= ir(2 downto 0);
-    lit <= ir(7 downto 0);
+    --lit <= ir(7 downto 0);
+    lit <=  pc(7 downto 0) when unsigned(op_int)=19 else
+            "000000" & pc(9 downto 8) when unsigned(op_int)=20 else
+            ir(7 downto 0);
+    
     addr_sig <= ir(9 downto 0);
     
     pc_out <= pc;
     op <= op_int;
+    
 
 end Behavioral;
