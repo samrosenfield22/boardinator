@@ -28,19 +28,20 @@ opcode	mnemonic	op0	op1			machine code		example				description
 00100	sub			dst src 		00011ddd 00000sss	sub r1,r0			dst -= src
 00101 	subl		dst lit 		00101ddd llllllll	subl r0,1			dst -= lit
 00110	xor			dst src 		00100ddd 00000sss	xor r1,r0			dst ^= src
-00101	and			dst src 		00101ddd 00000sss	and r1,r0			dst &= src
-00110	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
-00111	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)
-01000	not			dst 			01000ddd 00000000	not r0				dst != dst
-01001	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
-01010	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
-01011	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
-01100	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
-01101	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
-01110	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
-01111	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
-10000	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
-10001	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
+00111	and			dst src 		00101ddd 00000sss	and r1,r0			dst &= src
+01000	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
+01001	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)
+01010	not			dst 			01000ddd 00000000	not r0				dst != dst
+01011	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
+01100	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
+01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
+01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
+01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
+10000	jovf		label 			000000aa aaaaaaaa	jovf label 			if(OF) goto label
+10001	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
+10010	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
+10011	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
+10100	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
 
 Flags:
 EF (equal flag): set when cmp operands are equal

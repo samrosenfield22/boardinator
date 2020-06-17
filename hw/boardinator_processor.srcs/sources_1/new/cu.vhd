@@ -13,7 +13,7 @@ entity cu is
     Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
             rst : in STD_LOGIC;
             clk : in STD_LOGIC;
-            flags : in STD_LOGIC_VECTOR(1 downto 0);
+            flags : in STD_LOGIC_VECTOR(2 downto 0);
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
@@ -63,7 +63,7 @@ begin
                         elsif(unsigned(op_int) = 9) then     --cmp
                             data_en <= '0';
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(unsigned(op_int) < 16) then    --jmp operations
+                        elsif(unsigned(op_int) < 17) then    --jmp operations
                             data_en <= '0';
                             
                             if(op_int="01011") then --jmp
@@ -80,18 +80,22 @@ begin
                             elsif(op_int="01111") then  --jlt
                                 if(flags(1)='0' and flags(0)='0') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                            elsif(op_int="10000") then  --jovf
+                                if(flags(2)='1') then pc <= addr_sig;
+                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
 
-                        elsif(unsigned(op_int) < 18) then   --stack operations
+                        elsif(unsigned(op_int) < 19) then   --stack operations
                             
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                            if(unsigned(op_int) = 16) then  --setstk
+                            if(unsigned(op_int) = 17) then  --setstk
                                 stack_we <= '1';
                                 data_en <= '0';
                             else    --getstk
                                 stack_we <= '0';
                                 data_en <= '1';
                             end if;
+                        --else illegal operand
                         end if;
                         
                         cu_state <= fetch;

@@ -1,22 +1,4 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 06/12/2020 02:03:31 PM
--- Design Name: 
--- Module Name: datapath - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 
 
 library IEEE;
@@ -39,7 +21,7 @@ entity datapath is
            --stack_addr_reg : in STD_LOGIC_VECTOR(2 downto 0);
            
            out_word : out STD_LOGIC_VECTOR (7 downto 0);
-           flags : out STD_LOGIC_VECTOR(1 downto 0));
+           flags : out STD_LOGIC_VECTOR(2 downto 0));
 end datapath;
 
 architecture Behavioral of datapath is
@@ -62,8 +44,9 @@ architecture Behavioral of datapath is
      Port ( a : in STD_LOGIC_VECTOR (7 downto 0);
             b : in STD_LOGIC_VECTOR (7 downto 0);
             op : in STD_LOGIC_VECTOR (4 downto 0);
+            clk : in STD_LOGIC;
             y : out STD_LOGIC_VECTOR (7 downto 0);
-            flags : out STD_LOGIC_VECTOR (1 downto 0));
+            flags : out STD_LOGIC_VECTOR (2 downto 0));
      end component;
      
      component stack
@@ -95,6 +78,7 @@ begin
         a => a_sig,
         b => alu_b_in,
         op => op,
+        clk => clk,
         y => y_sig,
         flags => flags
     );
@@ -136,7 +120,7 @@ begin
     --register file input mux (selects between ALU Y and stack output
     process(op, y_sig, stack_output)
     begin
-        if(op="10000" or op="10001") then
+        if(op="10001" or op="10010") then
             rf_in <= stack_output;
         else
             rf_in <= y_sig;

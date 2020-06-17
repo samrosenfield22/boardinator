@@ -35,8 +35,9 @@ entity alu is
     Port ( a : in STD_LOGIC_VECTOR (7 downto 0);
            b : in STD_LOGIC_VECTOR (7 downto 0);
            op : in STD_LOGIC_VECTOR (4 downto 0);
+           clk : in STD_LOGIC;
            y : out STD_LOGIC_VECTOR (7 downto 0);
-           flags : out STD_LOGIC_VECTOR (1 downto 0));
+           flags : out STD_LOGIC_VECTOR (2 downto 0));
 end alu;
 
 architecture Behavioral of alu is
@@ -48,7 +49,7 @@ architecture Behavioral of alu is
     signal and_out:     std_logic_vector(7 downto 0);
     signal or_out:     std_logic_vector(7 downto 0);
     
-    signal flags_int:   std_logic_vector(1 downto 0) := (others => '0');
+    signal flags_int:   std_logic_vector(2 downto 0) := (others => '0');
     --etc
 begin
     mux_out <=  b when op="00000" else              --set
@@ -86,6 +87,25 @@ begin
             end if;
             
             --flags <= flags_int;
+        end if;
+    end process;
+    
+    process(clk)
+    begin
+        if(clk'event and clk='1') then
+            if(op="00010" or op="00011") then --add or addl
+                if(unsigned(adder_out) < unsigned(a)) then  --overflow
+                    flags_int(2) <= '1';
+                else
+                    flags_int(2) <= '0';
+                end if;
+            elsif(op="00100" or op="00101") then --sub or subl
+                if(unsigned(subt_out) > unsigned(a)) then  --underflow
+                    flags_int(2) <= '1';
+                else
+                    flags_int(2) <= '0';
+                end if;
+            end if;
         end if;
     end process;
     

@@ -8,10 +8,13 @@ opcode/mnemonic table should include format info ............ DONE
 pseudoinstructions for call/ret
 
 hardware:
-try and reduce clocks per instruction to 2
+try and reduce clocks per instruction to 2 .................. DONE
+add pushrpc, poppc instructions
+add library w enum for mnemonics
+make alu instructions 3-args (add r1,r2,r3)
 add sfrs
 	timer (prescaler, one-shot vs repeat)
-	reset (save cause of reset)
+	reset (save cause of reset -- POR, software, exception, stovf, segfault, illegal opcode)
 	uart
 	vga
 	interrupt?
@@ -20,3 +23,4 @@ add sfrs
 software:
 write stdlib
 	add16, mult8, mult16, floor, ceil, div, lsl/lsr, mod...
+	libraries for sfrs

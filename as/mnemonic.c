@@ -24,6 +24,7 @@ mnem_entry mnemonic_table[] =
 	{"jne", format_machine_jmp},
 	{"jgt", format_machine_jmp},
 	{"jlt", format_machine_jmp},
+	{"jovf", format_machine_jmp},
 
 	{"setstk", format_machine_dst_src},
 	{"getstk", format_machine_dst_src}
