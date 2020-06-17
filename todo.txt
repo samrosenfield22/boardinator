@@ -1,0 +1,22 @@
+boardinator -- to do
+-------------------------------
+
+assembler:
+include directives -- preprocess() should work on files, and call itself resursively
+symbols table includes macros, jump labels, and subroutine names
+opcode/mnemonic table should include format info ............ DONE
+pseudoinstructions for call/ret
+
+hardware:
+try and reduce clocks per instruction to 2
+add sfrs
+	timer (prescaler, one-shot vs repeat)
+	reset (save cause of reset)
+	uart
+	vga
+	interrupt?
+	gpio
+
+software:
+write stdlib
+	add16, mult8, mult16, floor, ceil, div, lsl/lsr, mod...

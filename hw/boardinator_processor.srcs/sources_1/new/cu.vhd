@@ -27,7 +27,7 @@ end cu;
 
 architecture Behavioral of cu is
 
-type cu_state_t is (fetch, decode, pause, load_next, execute);
+type cu_state_t is (fetch, execute);
 signal cu_state: cu_state_t := fetch;
 
 signal ir: std_logic_vector(15 downto 0);
@@ -52,79 +52,63 @@ begin
                     when fetch =>
                         --get instruction from program memory into IR
                         ir <= instr_in;
-                        cu_state <= decode;
-                    when decode =>
-                        op_int <= ir(15 downto 11);
-                        dst <= ir(10 downto 8);
-                        src <= ir(2 downto 0);
-                        lit <= ir(7 downto 0);
-                        addr_sig <= ir(9 downto 0);
-                        cu_state <= pause;
-                    when pause =>
+                        data_en <= '0';
+                        stack_we <= '0';
+                        cu_state <= execute;
+                   
+                    when execute =>
                         if(unsigned(op_int) < 9) then  --ALU operation
                             data_en <= '1';
-                            jmp_condition <= '0';
+                            pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(unsigned(op_int) = 9) then     --cmp
                             data_en <= '0';
-                            jmp_condition <= '0';
+                            pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(unsigned(op_int) < 16) then    --jmp operations
                             data_en <= '0';
                             
                             if(op_int="01011") then --jmp
-                                jmp_condition <= '1';
+                                pc <= addr_sig;
                             elsif(op_int="01100") then  --jeq
-                                if(flags(0)='1') then jmp_condition <= '1';
-                                else jmp_condition <= '0'; end if;
+                                if(flags(0)='1') then pc <= addr_sig;
+                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(op_int="01101") then  --jne
-                                if(flags(0)='0') then jmp_condition <= '1';
-                                else jmp_condition <= '0'; end if;
+                                if(flags(0)='0') then pc <= addr_sig;
+                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(op_int="01110") then  --jgt
-                                if(flags(1)='1' and flags(0)='0') then jmp_condition <= '1';
-                                else jmp_condition <= '0'; end if;
+                                if(flags(1)='1' and flags(0)='0') then pc <= addr_sig;
+                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(op_int="01111") then  --jlt
-                                if(flags(1)='0' and flags(0)='0') then jmp_condition <= '1';
-                                else jmp_condition <= '0'; end if;
+                                if(flags(1)='0' and flags(0)='0') then pc <= addr_sig;
+                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
-                            
 
                         elsif(unsigned(op_int) < 18) then   --stack operations
                             
-                            jmp_condition <= '0';
+                            pc <= std_logic_vector(unsigned(pc) + 1);
                             if(unsigned(op_int) = 16) then  --setstk
-                                --stack_addr <= ir(10 downto 8);
                                 stack_we <= '1';
                                 data_en <= '0';
                             else    --getstk
-                                --stack_addr <= ir(2 downto 0);
                                 stack_we <= '0';
                                 data_en <= '1';
                             end if;
                         end if;
                         
-                        
-                        cu_state <= load_next;
-                    when load_next =>
-                        if(jmp_condition = '1') then
-                            --next_pc <= addr_sig;
-                            pc <= addr_sig;
-                        else
-                            --next_pc <= std_logic_vector(unsigned(pc) + 1);
-                            pc <= std_logic_vector(unsigned(pc) + 1);
-                        end if;
-                        data_en <= '0';
-                        stack_we <= '0';
                         cu_state <= fetch;
-                    when execute =>
-                        pc <= next_pc;
-                        data_en <= '0';
-                        cu_state <= fetch;
+                    
                     when others =>
                         --ruh roh
-                    
                 end case;
             end if;
         end if;
     end process;
+    
+    --decoder
+    op_int <= ir(15 downto 11);
+    dst <= ir(10 downto 8);
+    src <= ir(2 downto 0);
+    lit <= ir(7 downto 0);
+    addr_sig <= ir(9 downto 0);
     
     pc_out <= pc;
     op <= op_int;
