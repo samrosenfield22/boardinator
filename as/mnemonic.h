@@ -9,7 +9,7 @@
 #include "symbols.h"	//only for bail(), might fix later
 
 uint8_t mnemonic_to_opcode(const char *mnemonic);
-uint8_t mnemonic_to_pseudo(const char *mnemonic);
+//uint8_t mnemonic_to_pseudo(const char *mnemonic);
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum);
 void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum);
@@ -17,7 +17,7 @@ void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum
 void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum);
 void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum);
 
-void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
+/*void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void pop_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void mklcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void setlcl_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
@@ -28,7 +28,7 @@ void leave_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 void ret_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void clean_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 void getarg_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
-
+*/
 
 
 void binstring(char *strbuf, int bin, int bits);

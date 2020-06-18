@@ -36,7 +36,7 @@ mnem_entry mnemonic_table[] =
 	//{"getsfr", format_machine_sfr}
 };
 
-mnem_entry pseudoinstruction_table[] =
+/*mnem_entry pseudoinstruction_table[] =
 {
 	{"push", push_pseudoinstruction},
 	{"pop", pop_pseudoinstruction},
@@ -48,11 +48,10 @@ mnem_entry pseudoinstruction_table[] =
 	{"leave", leave_pseudoinstruction},
 	{"ret", ret_pseudoinstruction},
 	{"clean", clean_pseudoinstruction},
-	{"getarg", getarg_pseudoinstruction},
+	{"getarg", getarg_pseudoinstruction}
 	//{"", _pseudoinstruction},
 	
-	
-};
+};*/
 
 uint8_t mnemonic_to_opcode(const char *mnemonic)
 {
@@ -65,7 +64,7 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 	return 0xFF;
 }
 
-uint8_t mnemonic_to_pseudo(const char *mnemonic)
+/*uint8_t mnemonic_to_pseudo(const char *mnemonic)
 {
 	for(int i=0; i<(sizeof(pseudoinstruction_table)/sizeof(pseudoinstruction_table[0])); i++)
 	{
@@ -74,7 +73,7 @@ uint8_t mnemonic_to_pseudo(const char *mnemonic)
 	}
 
 	return 0xFF;
-}
+}*/
 
 
 void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum)
@@ -110,7 +109,7 @@ void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum
 
 void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum)
 {
-	uint16_t addr = search_label(arg0);
+	uint16_t addr = search_symbol(arg0, LABEL);
 	printf("\t\t found label %s!!\n", arg0);
 	//int addr = strtol(arg0, NULL, 0);
 	binstring(machine, addr, 10);
@@ -133,6 +132,7 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
 	binstring(machine, addr, 8);
 }
 
+/*
 void push_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 {
 	FILE *fp = (FILE *)machine;
@@ -234,7 +234,7 @@ void getarg_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum
 	fprintf(fp, "%d|getstk\t%s,r7\n", linenum, arg0);
 	fprintf(fp, "%d|addl\tr7,%d\n", linenum, ofs);
 }
-
+*/
 
 
 void binstring(char *strbuf, int bin, int bits)

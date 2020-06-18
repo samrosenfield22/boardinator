@@ -9,7 +9,7 @@ FILE *preprocess(const char *fpath)
 		bail("couldnt open file blah blah");
 
 	//open all tempfiles
-	FILE *temp1, *temp2, *temp3;
+	FILE *temp1, *temp2, *temp3, *temp4;//, *temp5;
 	temp1 = fopen(TEMPFILE1, "w+");
 	if(!temp1)
 		bail("failed to open %s", TEMPFILE1);
@@ -19,13 +19,27 @@ FILE *preprocess(const char *fpath)
 	temp3 = fopen(TEMPFILE3, "w+");
 	if(!temp3)
 		bail("failed to open %s", TEMPFILE3);
+	temp4 = fopen(TEMPFILE4, "w+");
+	if(!temp4)
+		bail("failed to open %s", TEMPFILE4);
+	//temp5 = fopen(TEMPFILE5, "w+");
+	//if(!temp5)
+	//	bail("failed to open %s", TEMPFILE5);
 
 
 	iterate_file(fp, temp1, remove_comments_add_linenums);
-	iterate_file(temp1, temp2, expand_pseudos);
-	iterate_file(temp2, temp3, load_symbols);
+	printf("loading macros...\n"); iterate_file(temp1, temp2, load_macros);
+	//dump_symbols(MACRO); exit(0);
+	printf("expanding macros...\n"); iterate_file(temp2, temp3, expand_macros);
+	//printf("expanding pseudos...\n"); iterate_file(temp3, temp4, expand_pseudos);		//this is gonna get deleted once we support double-arg macros
+	printf("loading labels...\n"); iterate_file(temp3, temp4, load_labels);
 
-	return temp3;
+	fclose(temp1);
+	fclose(temp2);
+	fclose(temp3);
+	//fclose(temp4);
+
+	return temp4;
 }
 
 //file must already be open
@@ -86,7 +100,7 @@ void remove_comments_add_linenums(char *line, FILE *next)
 	linenum++;
 }
 
-void expand_pseudos(char *line, FILE *next)
+/*void expand_pseudos(char *line, FILE *next)
 {
 	char linecpy[161];
 	strcpy(linecpy, line);
@@ -114,10 +128,10 @@ void expand_pseudos(char *line, FILE *next)
 			//getchar();
 			pseudoinstruction_table[pseudo].format((char *)next, arg0, arg1, linenum);
 		}
-}
+}*/
 
 //doesn't actually create a 3rd tempfile
-void load_symbols(char *line, FILE *next)
+void load_labels(char *line, FILE *next)
 {
 	char linecpy[161];
 	strcpy(linecpy, line);
@@ -145,7 +159,7 @@ void load_symbols(char *line, FILE *next)
 				if(*p)
 				{
 					printf("found label \'%s\' at addr 0x%04x\n", p, instr_addr);
-					store_label(p, instr_addr);
+					store_symbol(p, instr_addr, LABEL);
 				}
 				
 				//goto line_scanned;
@@ -159,6 +173,166 @@ void load_symbols(char *line, FILE *next)
 	//line_scanned:
 	instr_addr++;
 }
+
+void load_macros(char *line, FILE *next)
+{
+	//char restofline[80], argbuf[80];
+
+	char *def = strstr(line, ".define");
+	if(def)
+	{
+		//grab the macro
+		def += 7;
+		strtok(def, "\"");
+		char *from = strtok(NULL, "\"");
+		strtok(NULL, "\"");
+		char *to = strtok(NULL, "\"");
+
+		//grab macro argument (if there is one)
+		char *arg1 = strtok(from, " \t,");
+		arg1 = strtok(NULL, " \t,");
+		char *arg2 = strtok(NULL, " \t,");
+
+		//load it to the symbol table
+		printf("found macro: %s (args %s, %s) => %s\n", from, arg1, arg2, to);
+		symbols_table[symbol_cnt].type = MACRO;
+		symbols_table[symbol_cnt].name = malloc(strlen(from)+1);
+		strcpy(symbols_table[symbol_cnt].name, from);
+		symbols_table[symbol_cnt].expand = malloc(strlen(to)+1);
+		strcpy(symbols_table[symbol_cnt].expand, to);
+		if(arg1)
+		{
+			symbols_table[symbol_cnt].arg1 = malloc(strlen(arg1)+1);
+			strcpy(symbols_table[symbol_cnt].arg1, arg1);
+
+			if(arg2)
+			{
+				symbols_table[symbol_cnt].arg2 = malloc(strlen(arg2)+1);
+				strcpy(symbols_table[symbol_cnt].arg2, arg2);
+			}
+			else
+				symbols_table[symbol_cnt].arg2 = NULL;
+		}
+		else
+		{
+			symbols_table[symbol_cnt].arg1 = NULL;
+			symbols_table[symbol_cnt].arg2 = NULL;
+		}
+
+		//replace \n with newlines in macro
+		char *repl;
+		do {repl = strrepl(symbols_table[symbol_cnt].expand, "\\n", "\n");}
+		while(repl);
+		
+
+		symbol_cnt++;
+	}
+	else
+		fprintf(next, line);
+}
+
+void expand_macros(char *line, FILE *next)
+{
+	//char argbuf[80];
+
+	char incpy[161];
+	char *bp = strtok(line, "|");
+	int linenum = strtol(bp, NULL, 10);
+	bp = strtok(NULL, "|");
+	strcpy(incpy, bp);
+	//printf("\t--- %s ---\n", incpy);
+
+	//scan the line for macros
+	for(int i=0; i<symbol_cnt; i++)
+	{
+		if(symbols_table[i].type != MACRO)
+			continue;
+		//printf("searching for macro %d (%s)\n", i, symbols_table[i].name);
+
+		char lcpy[161];
+		strcpy(lcpy, incpy);
+
+		char *tok = strtok(lcpy, " \t\n");
+		while(tok)
+		{
+			//printf("%s\n", tok);
+			if(strcmp(tok, symbols_table[i].name)==0)
+			{
+				//printf("expanding macro %s\n", tok);
+
+				//if the macro has an argument, grab it
+				char argfield[161];
+				//strcpy(tok_w_args, lcpy);
+				char *argp, *arg1in, *arg2in;
+				if(symbols_table[i].arg1)
+				{
+					printf("macro \'%s\' defined with default args: %s, %s\n",
+						tok, symbols_table[i].arg1, symbols_table[i].arg2);
+					//argin = strtok(NULL, " \t\n");
+					//argin = strtok(NULL, "\t\n");
+
+					argp = tok + strlen(tok) + 1;
+					strcpy(argfield, argp);
+					//argfield = tok_w_args + strlen(tok_w_args) + 1;
+					printf("\targ string: %s\n", argfield);
+					arg1in = strtok(argfield, ",\n");
+					arg2in = strtok(NULL, ",\n");
+					printf("\tmacro has args: %s, %s\n", arg1in, arg2in);
+					//strcpy(argbuf, arg1in);
+				}
+
+				//expand the macro
+				while(strtok(NULL, " \t\n"));
+				//printf("\tbefore: %s\n", line);
+				char *repl_pt = strrepl(incpy, tok, symbols_table[i].expand);
+				repl_pt += strlen(symbols_table[i].expand);
+				*repl_pt = '\0';
+				if(symbols_table[i].arg1)
+					while(strrepl(incpy, symbols_table[i].arg1, arg1in));
+				if(symbols_table[i].arg2)
+					while(strrepl(incpy, symbols_table[i].arg2, arg2in));
+
+			}
+
+			tok = strtok(NULL, " \t\n");
+		}
+	}
+
+	
+	//print each line of the expanded macro, prefixing with line numbers
+	char *lprint = strtok(incpy, "\n");
+	while(lprint)
+	{
+		fprintf(next, "%d|%s\n", linenum, lprint);
+		lprint = strtok(NULL, "\n");
+	}
+}
+
+//replace from with to (in line) -- only the 1st occurence. return a ptr to the start of the replaced string
+char *strrepl(char *line, const char *from, const char *to)
+{
+	char *p = strstr(line, from);
+	if(p)
+	{
+		char *newline = malloc(strlen(line) + strlen(to) + 1);
+		if(!newline) return NULL;
+
+		//save the insert/replace location
+		char *loc = p;
+
+		*p = '\0';
+		p += strlen(from);
+		sprintf(newline, "%s%s%s", line, to, p);
+
+		strcpy(line, newline);
+		free(newline);
+
+		return loc;
+	}
+
+	return NULL;
+}
+
 
 
 /*

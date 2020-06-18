@@ -11,10 +11,32 @@
 
 //this really doesn't belong here...
 #define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
-//#define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); dump_labels(); exit(-1);} while(0)
+//#define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); dump_symbols(); exit(-1);} while(0)
 
-void store_label(const char *name, uint16_t addr);
-uint16_t search_label(const char *name);
-void dump_labels(void);
+typedef enum
+{
+	LABEL,
+	MACRO
+	//FUNCTION?
+} SYMBOL_TYPE;
+
+typedef struct symbol_s
+{
+	SYMBOL_TYPE type;
+	char *name;
+
+	//fields for macros only
+	char *expand, *arg1, *arg2;
+
+	uint16_t addr;
+} symbol;
+
+#define MAX_SYMBOLS (400)
+extern symbol symbols_table[MAX_SYMBOLS];
+extern int symbol_cnt;
+
+void store_symbol(const char *name, uint16_t addr, SYMBOL_TYPE type);
+uint16_t search_symbol(const char *name, SYMBOL_TYPE type);
+void dump_symbols(SYMBOL_TYPE type);
 
 #endif //SYMBOLS_H_
