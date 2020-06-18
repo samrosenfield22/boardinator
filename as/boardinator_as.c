@@ -40,16 +40,10 @@ int main(int argc, const char **argv)
 	if(!parse_cmd_args(argc, argv))
 		printf("exiting...\n");
 
-	/*char line[161] = "55|\taddl\tsp,5\n";
-	FILE *ftest = fopen("testfile.txt", "w+");
-	assert(ftest);
-	expand_macros(line, ftest);
-	return 0;*/
-
 	preprocessed = preprocess(argv[1]);
 
 	uint16_t wordcnt = assemble(preprocessed);
-	printf("\nAssembly complete (0x%04x words, 0x%04x bytes)\n", wordcnt, wordcnt<<1);
+	printf("Assembly successful (0x%04x words, 0x%04x bytes)\n", wordcnt, wordcnt<<1);
 
 	fclose(fin);
 	fclose(preprocessed);
@@ -129,7 +123,7 @@ uint16_t assemble(FILE *preprocessed)
 		strcpy(orig, bp);
 
 		assemble_line(machine, bp, linenum);
-		print_machine(stdout, machine, wordcnt, orig, PRETTY);
+		//print_machine(stdout, machine, wordcnt, orig, PRETTY);
 		print_machine(fout, machine, wordcnt, orig, VHDL);
 
 		wordcnt++;
@@ -143,20 +137,22 @@ void assemble_line(char *machine, char *line, int linenum)
 	char binbuf[OPCODE_BITS+1];
 	char *mnem, *arg0, *arg1;
 
-	printf("read line %d: %s", linenum, line);
+	//printf("read line %d: %s", linenum, line);
 
 	tokenize_asm(&mnem, &arg0, &arg1, line);
 	if(!mnem)
-		bail("syntax error on line %d", linenum);
+		error("in", linenum, "syntax error");
+		//bail("syntax error on line %d", linenum);
 
 	int opcode = mnemonic_to_opcode(mnem);
 	if(opcode == 0xFF)
-		bail("unrecognized mnemonic: \'%s\'", mnem);
+		error("in", linenum, "unrecognized mnemonic: \'%s\'", mnem);
+		//bail("unrecognized mnemonic: \'%s\' on line %d", mnem, linenum);
 
 	binstring(binbuf, opcode, OPCODE_BITS);
-	printf("\tmnemonic: %s (opcode %d)\n", mnem, opcode);
-	printf("\targ 1: %s\n", arg0);
-	printf("\targ 2: %s\n", arg1);
+	//printf("\tmnemonic: %s (opcode %d)\n", mnem, opcode);
+	//printf("\targ 1: %s\n", arg0);
+	//printf("\targ 2: %s\n", arg1);
 
 	//for testing, initialize machine code word to a bad value (should set to '0')
 	for(int i=0; i<INSTR_BITS; i++)

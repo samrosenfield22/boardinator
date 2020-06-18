@@ -12,7 +12,7 @@
 4th pass: expand macros
 	need load/expand to be separate steps so one macro doesn't expand inside another
 4th pass: load labels
-	this has to be done after any passes that change the number of instructions (i.e. expanding macros/pseudos)
+	this has to be done after any passes that change the number of instructions (i.e. expanding macros)
 5th pass: expand labels
 */
 

@@ -10,8 +10,15 @@
 #include <assert.h>
 
 //this really doesn't belong here...
-#define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
+#define bail(...)		do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); exit(-1);} while(0)
 //#define bail(...)	do {printf("Error: "); printf(__VA_ARGS__); putchar('\n'); dump_symbols(); exit(-1);} while(0)
+#define error(file, lnum, ...)					\
+	do {										\
+		printf("Error (%s, %d): ", file, lnum);	\
+		printf(__VA_ARGS__);					\
+		putchar('\n');							\
+		exit(-1);								\
+	} while(0)
 
 typedef enum
 {

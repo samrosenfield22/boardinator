@@ -30,6 +30,7 @@ void clean_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum)
 void getarg_pseudoinstruction(char *machine, char *arg0, char *arg1, int linenum);
 */
 
+int get_reg_num(char *arg, int linenum);
 
 void binstring(char *strbuf, int bin, int bits);
 
