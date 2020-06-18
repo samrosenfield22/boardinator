@@ -36,6 +36,7 @@ extern symbol symbols_table[MAX_SYMBOLS];
 extern int symbol_cnt;
 
 void store_symbol(const char *name, uint16_t addr, SYMBOL_TYPE type);
+void store_macro(const char *name, const char *expand, const char *arg1, const char *arg2);
 uint16_t search_symbol(const char *name, SYMBOL_TYPE type);
 void dump_symbols(SYMBOL_TYPE type);
 

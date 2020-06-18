@@ -33,6 +33,7 @@
 #define TEMPFILE3 "tempfile3.asm"
 #define TEMPFILE4 "tempfile4.asm"
 #define TEMPFILE5 "tempfile5.asm"
+#define TEMPFILE6 "tempfile6.asm"
 
 void iterate_file(FILE *fp, FILE *next, void (*process)(char *line, FILE *next));
 

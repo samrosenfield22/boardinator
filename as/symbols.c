@@ -21,6 +21,40 @@ void store_symbol(const char *name, uint16_t addr, SYMBOL_TYPE type)
 	symbol_cnt++;
 }
 
+void store_macro(const char *name, const char *expand, const char *arg1, const char *arg2)
+{
+	symbols_table[symbol_cnt].type = MACRO;
+	symbols_table[symbol_cnt].addr = 0;
+
+	symbols_table[symbol_cnt].name = malloc(strlen(name)+1);
+	assert(symbols_table[symbol_cnt].name);
+	strcpy(symbols_table[symbol_cnt].name, name);
+
+	symbols_table[symbol_cnt].expand = malloc(strlen(expand)+1);
+	assert(symbols_table[symbol_cnt].expand);
+	strcpy(symbols_table[symbol_cnt].expand, expand);
+
+	if(arg1)
+	{
+		symbols_table[symbol_cnt].arg1 = malloc(strlen(arg1)+1);
+		assert(symbols_table[symbol_cnt].arg1);
+		strcpy(symbols_table[symbol_cnt].arg1, arg1);
+	}
+	else
+		symbols_table[symbol_cnt].arg1 = NULL;
+
+	if(arg2)
+	{
+		symbols_table[symbol_cnt].arg2 = malloc(strlen(arg2)+1);
+		assert(symbols_table[symbol_cnt].arg2);
+		strcpy(symbols_table[symbol_cnt].arg2, arg2);
+	}
+	else
+		symbols_table[symbol_cnt].arg2 = NULL;
+
+	symbol_cnt++;
+}
+
 uint16_t search_symbol(const char *name, SYMBOL_TYPE type)
 {
 	for(int i=0; i<symbol_cnt; i++)

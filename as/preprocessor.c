@@ -9,7 +9,7 @@ FILE *preprocess(const char *fpath)
 		bail("couldnt open file blah blah");
 
 	//open all tempfiles
-	FILE *temp1, *temp2, *temp3, *temp4, *temp5;
+	FILE *temp1, *temp2, *temp3, *temp4, *temp5, *temp6;
 	temp1 = fopen(TEMPFILE1, "w+");
 	if(!temp1)
 		bail("failed to open %s", TEMPFILE1);
@@ -25,6 +25,9 @@ FILE *preprocess(const char *fpath)
 	temp5 = fopen(TEMPFILE5, "w+");
 	if(!temp5)
 		bail("failed to open %s", TEMPFILE5);
+	temp6 = fopen(TEMPFILE6, "w+");
+	if(!temp6)
+		bail("failed to open %s", TEMPFILE6);
 
 
 	iterate_file(fp, temp1, remove_comments_add_linenums);
@@ -38,15 +41,17 @@ FILE *preprocess(const char *fpath)
 	//expand_macros(tline, temp4);
 	//exit(0);
 	printf("expanding macros...\n"); iterate_file(temp3, temp4, expand_macros);
+	printf("expanding macros...\n"); iterate_file(temp4, temp5, expand_macros);
 	//printf("expanding pseudos...\n"); iterate_file(temp3, temp4, expand_pseudos);		//this is gonna get deleted once we support double-arg macros
-	printf("loading labels...\n"); iterate_file(temp4, temp5, load_labels);
+	printf("loading labels...\n"); iterate_file(temp5, temp6, load_labels);
 
 	fclose(temp1);
 	fclose(temp2);
 	fclose(temp3);
 	fclose(temp4);
+	fclose(temp5);
 
-	return temp5;
+	return temp6;
 }
 
 //file must already be open
@@ -183,8 +188,6 @@ void load_labels(char *line, FILE *next)
 
 void load_macros(char *line, FILE *next)
 {
-	//char restofline[80], argbuf[80];
-
 	char *def = strstr(line, ".define");
 	if(def)
 	{
@@ -195,44 +198,17 @@ void load_macros(char *line, FILE *next)
 		strtok(NULL, "\"");
 		char *to = strtok(NULL, "\"");
 
-		//grab macro argument (if there is one)
+		//grab macro arguments (if there are any)
 		char *arg1 = strtok(from, " \t,");
 		arg1 = strtok(NULL, " \t,");
 		char *arg2 = strtok(NULL, " \t,");
 
 		//load it to the symbol table
-		printf("found macro: %s (args %s, %s) => %s\n", from, arg1, arg2, to);
-		symbols_table[symbol_cnt].type = MACRO;
-		symbols_table[symbol_cnt].name = malloc(strlen(from)+1);
-		strcpy(symbols_table[symbol_cnt].name, from);
-		symbols_table[symbol_cnt].expand = malloc(strlen(to)+1);
-		strcpy(symbols_table[symbol_cnt].expand, to);
-		if(arg1)
-		{
-			symbols_table[symbol_cnt].arg1 = malloc(strlen(arg1)+1);
-			strcpy(symbols_table[symbol_cnt].arg1, arg1);
-
-			if(arg2)
-			{
-				symbols_table[symbol_cnt].arg2 = malloc(strlen(arg2)+1);
-				strcpy(symbols_table[symbol_cnt].arg2, arg2);
-			}
-			else
-				symbols_table[symbol_cnt].arg2 = NULL;
-		}
-		else
-		{
-			symbols_table[symbol_cnt].arg1 = NULL;
-			symbols_table[symbol_cnt].arg2 = NULL;
-		}
+		//printf("found macro: %s (args %s, %s) => %s\n", from, arg1, arg2, to);
+		store_macro(from, to, arg1, arg2);
 
 		//replace \n with newlines in macro
-		char *repl;
-		do {repl = strrepl(symbols_table[symbol_cnt].expand, "\\n", "\n");}
-		while(repl);
-		
-
-		symbol_cnt++;
+		while(strrepl(symbols_table[symbol_cnt-1].expand, "\\n", "\n"));
 	}
 	else
 		fprintf(next, line);
