@@ -40,6 +40,12 @@ int main(int argc, const char **argv)
 	if(!parse_cmd_args(argc, argv))
 		printf("exiting...\n");
 
+	/*char line[161] = "55|\taddl\tsp,5\n";
+	FILE *ftest = fopen("testfile.txt", "w+");
+	assert(ftest);
+	expand_macros(line, ftest);
+	return 0;*/
+
 	preprocessed = preprocess(argv[1]);
 
 	uint16_t wordcnt = assemble(preprocessed);

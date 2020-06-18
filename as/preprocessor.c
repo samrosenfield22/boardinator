@@ -9,7 +9,7 @@ FILE *preprocess(const char *fpath)
 		bail("couldnt open file blah blah");
 
 	//open all tempfiles
-	FILE *temp1, *temp2, *temp3, *temp4;//, *temp5;
+	FILE *temp1, *temp2, *temp3, *temp4, *temp5;
 	temp1 = fopen(TEMPFILE1, "w+");
 	if(!temp1)
 		bail("failed to open %s", TEMPFILE1);
@@ -22,24 +22,31 @@ FILE *preprocess(const char *fpath)
 	temp4 = fopen(TEMPFILE4, "w+");
 	if(!temp4)
 		bail("failed to open %s", TEMPFILE4);
-	//temp5 = fopen(TEMPFILE5, "w+");
-	//if(!temp5)
-	//	bail("failed to open %s", TEMPFILE5);
+	temp5 = fopen(TEMPFILE5, "w+");
+	if(!temp5)
+		bail("failed to open %s", TEMPFILE5);
 
 
 	iterate_file(fp, temp1, remove_comments_add_linenums);
 	printf("loading macros...\n"); iterate_file(temp1, temp2, load_macros);
 	//dump_symbols(MACRO); exit(0);
 	printf("expanding macros...\n"); iterate_file(temp2, temp3, expand_macros);
+	//printf("\n\n--------------------------------\n");
+	//char tline[161] = "55|\taddl\tsp,5\n";
+	//char tline[161] = "55|\tpush r5\n";
+	//char tline[161] = "55|\tsetlcl 1,r3\n";
+	//expand_macros(tline, temp4);
+	//exit(0);
+	printf("expanding macros...\n"); iterate_file(temp3, temp4, expand_macros);
 	//printf("expanding pseudos...\n"); iterate_file(temp3, temp4, expand_pseudos);		//this is gonna get deleted once we support double-arg macros
-	printf("loading labels...\n"); iterate_file(temp3, temp4, load_labels);
+	printf("loading labels...\n"); iterate_file(temp4, temp5, load_labels);
 
 	fclose(temp1);
 	fclose(temp2);
 	fclose(temp3);
-	//fclose(temp4);
+	fclose(temp4);
 
-	return temp4;
+	return temp5;
 }
 
 //file must already be open
@@ -247,18 +254,25 @@ void expand_macros(char *line, FILE *next)
 	{
 		if(symbols_table[i].type != MACRO)
 			continue;
-		//printf("searching for macro %d (%s)\n", i, symbols_table[i].name);
+		printf("searching for macro %s\n", symbols_table[i].name);
 
 		char lcpy[161];
 		strcpy(lcpy, incpy);
 
-		char *tok = strtok(lcpy, " \t\n");
+		char *tok = strtok(lcpy, " ,\t\n");
 		while(tok)
 		{
+			printf("\tchecking token %s\n", tok);
+
 			//printf("%s\n", tok);
 			if(strcmp(tok, symbols_table[i].name)==0)
 			{
 				//printf("expanding macro %s\n", tok);
+				/*if(strcmp(tok, "mklcl")==0)
+				{
+					printf("found mklcl\n");
+					getchar();
+				}*/
 
 				//if the macro has an argument, grab it
 				char argfield[161];
@@ -282,19 +296,39 @@ void expand_macros(char *line, FILE *next)
 				}
 
 				//expand the macro
-				while(strtok(NULL, " \t\n"));
-				//printf("\tbefore: %s\n", line);
-				char *repl_pt = strrepl(incpy, tok, symbols_table[i].expand);
-				repl_pt += strlen(symbols_table[i].expand);
-				*repl_pt = '\0';
+				while(strtok(NULL, " ,\t\n"));	//does this do anything?
+
+				//we're replacing the macro, AND any args -- "push r5" needs to get expanded (not just)
+				//the "push" part.
+				//repltarget is the entire part that gets replaced 
+				char repltarget[161];
+				if(symbols_table[i].arg1)
+				{
+					char *p = incpy;
+					while(*p!=' ' && *p!='\t') p++;
+					while(*p!=',' && *p!='\n' && *p!='\0') p++;
+					if(symbols_table[i].arg2)
+						while(*p!='\n' && *p!='\0') p++;
+
+					strncpy(repltarget, incpy, p-incpy+1);
+					repltarget[p-incpy+1] = '\0';
+				}
+				else
+					strcpy(repltarget, tok);
+
+				printf("\tbefore expanding: %s (replacing token %s)\n", incpy, repltarget);
+				//if(strstr(incpy, "setlcl")) getchar();
+				strrepl(incpy, repltarget, symbols_table[i].expand);
+
+				//substitute "default args" with actual args
 				if(symbols_table[i].arg1)
 					while(strrepl(incpy, symbols_table[i].arg1, arg1in));
 				if(symbols_table[i].arg2)
 					while(strrepl(incpy, symbols_table[i].arg2, arg2in));
-
+				printf("after expanding: %s\n", incpy);
 			}
 
-			tok = strtok(NULL, " \t\n");
+			tok = strtok(NULL, " ,\t\n");
 		}
 	}
 
