@@ -5,19 +5,19 @@
 
 mnem_entry mnemonic_table[] =
 {
-	{"set", format_machine_dst_literal},
+	{"set", format_machine_reg_literal},
 
-	{"mov", format_machine_dst_src},
-	{"add", format_machine_dst_src},
-	{"addl", format_machine_dst_literal},
-	{"sub", format_machine_dst_src},
-	{"subl", format_machine_dst_literal},
-	{"xor", format_machine_dst_src},
-	{"and", format_machine_dst_src},
-	{"or", format_machine_dst_src},
-	{"cmp", format_machine_dst_src},
+	{"mov", format_machine_double_reg},
+	{"add", format_machine_double_reg},
+	{"addl", format_machine_reg_literal},
+	{"sub", format_machine_double_reg},
+	{"subl", format_machine_reg_literal},
+	{"xor", format_machine_double_reg},
+	{"and", format_machine_double_reg},
+	{"or", format_machine_double_reg},
+	{"cmp", format_machine_double_reg},
 
-	{"not", format_machine_single_op},
+	{"not", format_machine_single_op},	//i think this still isn't implemented
 
 	{"jmp", format_machine_jmp},
 	{"jeq", format_machine_jmp},
@@ -26,11 +26,12 @@ mnem_entry mnemonic_table[] =
 	{"jlt", format_machine_jmp},
 	{"jovf", format_machine_jmp},
 
-	{"setstk", format_machine_dst_src},
-	{"getstk", format_machine_dst_src},
+	{"setstk", format_machine_double_reg},
+	{"getstk", format_machine_double_reg},
 
 	{"getpcl", format_machine_single_op},
-	{"getpch", format_machine_single_op}
+	{"getpch", format_machine_single_op},
+	{"setpc", format_machine_double_reg}
 
 	//{"setsfr", format_machine_sfr},
 	//{"getsfr", format_machine_sfr}
@@ -76,7 +77,7 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 }*/
 
 
-void format_machine_dst_literal(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
+void format_machine_reg_literal(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 	//if(arg0[0] != 'r') error("in", linenum, "expected register as 1st argument"); //bail("line %d: expected register as argument", linenum);
 	//int dst = arg0[1] - '0';
@@ -89,7 +90,7 @@ void format_machine_dst_literal(char *machine, char *arg0, char *arg1, const cha
 	binstring(machine, lit, 8);
 }
 
-void format_machine_dst_src(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
+void format_machine_double_reg(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 
 	//if(arg0[0] != 'r') {printf("ruh roh! problem on line %d\n", linenum); exit(-1);}

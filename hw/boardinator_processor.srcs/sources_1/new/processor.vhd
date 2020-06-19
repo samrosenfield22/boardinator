@@ -30,7 +30,10 @@ architecture Behavioral of processor is
            --stack_addr : in STD_LOGIC_VECTOR(7 downto 0);
            
            out_word : out STD_LOGIC_VECTOR (7 downto 0);
-           flags : out STD_LOGIC_VECTOR(2 downto 0));
+           flags : out STD_LOGIC_VECTOR(2 downto 0);
+           
+           a_readback : out STD_LOGIC_VECTOR(7 downto 0);
+           b_readback : out STD_LOGIC_VECTOR(7 downto 0));
      end component;
      
      component cu
@@ -38,6 +41,8 @@ architecture Behavioral of processor is
             rst : in STD_LOGIC;
             clk : in STD_LOGIC;
             flags : in STD_LOGIC_VECTOR(2 downto 0);
+            a_readback : in STD_LOGIC_VECTOR(7 downto 0);
+            b_readback : in STD_LOGIC_VECTOR(7 downto 0);
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
@@ -57,6 +62,8 @@ architecture Behavioral of processor is
      signal flags : STD_LOGIC_VECTOR(2 downto 0);
      signal stack_we : std_logic;
      signal stack_addr : std_logic_vector(7 downto 0);
+     
+     signal a_readback, b_readback: STD_LOGIC_VECTOR(7 downto 0);
 
 begin
     data_path: datapath port map (
@@ -70,7 +77,9 @@ begin
         stack_we => stack_we,
         --stack_addr => stack_addr,
         out_word => open,
-        flags => flags
+        flags => flags,
+        a_readback => a_readback,
+        b_readback => b_readback
     );
     
     control: cu port map (
@@ -78,6 +87,8 @@ begin
         rst => rst,
         clk => clk,
         flags => flags,
+        a_readback => a_readback,
+        b_readback => b_readback,
         op => op,
         dst => dst,
         src => src,

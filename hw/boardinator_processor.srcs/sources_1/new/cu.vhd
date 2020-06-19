@@ -16,6 +16,8 @@ entity cu is
             rst : in STD_LOGIC;
             clk : in STD_LOGIC;
             flags : in STD_LOGIC_VECTOR(2 downto 0);
+            a_readback : in STD_LOGIC_VECTOR(7 downto 0);
+            b_readback : in STD_LOGIC_VECTOR(7 downto 0);
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
@@ -99,6 +101,9 @@ begin
                         elsif(unsigned(op_int) < 21) then   --getpcl/h
                             data_en <= '1';
                             pc <= std_logic_vector(unsigned(pc) + 1);
+                        elsif(unsigned(op_int) = 21) then   --setpc
+                            data_en <= '0';
+                            pc <= a_readback(1 downto 0) & b_readback;
                         
                         end if;
                         

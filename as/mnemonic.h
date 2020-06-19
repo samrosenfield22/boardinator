@@ -11,8 +11,8 @@
 uint8_t mnemonic_to_opcode(const char *mnemonic);
 //uint8_t mnemonic_to_pseudo(const char *mnemonic);
 
-void format_machine_dst_literal(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
-void format_machine_dst_src(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
+void format_machine_reg_literal(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
+void format_machine_double_reg(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
 void format_machine_single_op(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
 void format_machine_jmp(char *machine, char *arg0, char *arg1, const char *fn, int linenum);
 void format_machine_sfr(char *machine, char *arg0, char *arg1, const char *fn, int linenum);

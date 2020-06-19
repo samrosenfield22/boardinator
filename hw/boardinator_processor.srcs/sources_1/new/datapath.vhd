@@ -21,7 +21,10 @@ entity datapath is
            --stack_addr_reg : in STD_LOGIC_VECTOR(2 downto 0);
            
            out_word : out STD_LOGIC_VECTOR (7 downto 0);
-           flags : out STD_LOGIC_VECTOR(2 downto 0));
+           flags : out STD_LOGIC_VECTOR(2 downto 0);
+           
+           a_readback : out STD_LOGIC_VECTOR(7 downto 0);
+           b_readback : out STD_LOGIC_VECTOR(7 downto 0));
 end datapath;
 
 architecture Behavioral of datapath is
@@ -137,5 +140,8 @@ begin
     end process;
     
     out_word <= y_sig;
+    
+    a_readback <= a_sig;
+    b_readback <= b_sig;
 
 end Behavioral;

@@ -42,8 +42,8 @@ opcode	mnemonic	op0	op1			machine code		example				description
 10010	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
 10011	getpcl		dst 			10011ddd 00000000	getpcl r5			dst = pc[7:0]
 10100	getpch 		dst 			10100ddd 00000000	getpch r4			dst = pc[9:8]
+10101	setpc		rhi rlo			10101hhh 00000lll	setpc r4,r5			pc = (hi<<8) | lo
 
-10101	setpc
 xxxxx	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
 xxxxx	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
 
