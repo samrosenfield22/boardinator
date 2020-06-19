@@ -127,6 +127,14 @@ void iterate_file(const char *inpath, const char *outpath,void (*process)(const 
 void remove_comments_add_linenums(const char *fn, char *line, FILE *next)
 {
 	static int linenum = 1;
+	static const char *prev_file = NULL;
+
+	if(prev_file != fn)
+	{
+		//new file, reset the line numbers
+		linenum = 1;
+		prev_file = fn;
+	}
 
 	//remove comments, search for reserved characters
 	for(char *p=line; p<line+240; p++)
@@ -275,14 +283,20 @@ void expand_macros(const char *fn, char *line, FILE *next)
 {
 	//char argbuf[80];
 
-	char incpy[241], header[241];
+	/*char incpy[241], header[241];
 	char *bp = strtok(line, "|");
-	//int linenum = strtol(bp, NULL, 10);
 	strcpy(header, bp);
-	//printf("line num = %d\n", linenum);
+	bp = strtok(NULL, "|");
+	strcpy(incpy, bp);*/
+
+	char incpy[241], fname[241];
+	char *bp = strtok(line, ",|");
+	strcpy(fname, bp);
+	bp = strtok(NULL, ",|");
+	int linenum = strtol(bp, NULL, 10);
 	bp = strtok(NULL, "|");
 	strcpy(incpy, bp);
-	//printf("\t--- %s ---\n", incpy);
+
 
 	//scan the line for macros
 	for(int i=0; i<symbol_cnt; i++)
@@ -325,7 +339,15 @@ void expand_macros(const char *fn, char *line, FILE *next)
 					//argfield = tok_w_args + strlen(tok_w_args) + 1;
 					//printf("\targ string: %s\n", argfield);
 					arg1in = strtok(argfield, ",\n");
-					arg2in = strtok(NULL, ",\n");
+					if(!arg1in)
+						error(fname, linenum, "missing arg to macro %s", tok);
+					if(symbols_table[i].arg2)
+					{
+						arg2in = strtok(NULL, ",\n");
+						if(!arg2in)
+							error(fname, linenum, "missing 2nd arg to macro %s", tok);
+
+					}
 					//printf("\tmacro has args: %s, %s\n", arg1in, arg2in);
 					//strcpy(argbuf, arg1in);
 				}
@@ -358,9 +380,12 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				//printf("main macro replaced\n%s\n", incpy);
 
 				//substitute "default args" with actual args
-				//printf("replacing %s\nwith %s\n", symbols_table[i].arg1, arg1in);
 				if(symbols_table[i].arg1)
+				{
+					printf("replacing %s\nwith %s\n", symbols_table[i].arg1, arg1in);
+					printf("at (%s,%d)\n\n", fname, linenum);
 					strrepl(incpy, symbols_table[i].arg1, arg1in, true);
+				}
 				if(symbols_table[i].arg2)
 					strrepl(incpy, symbols_table[i].arg2, arg2in, true);
 				//printf("after expanding: %s\n", incpy);
@@ -377,7 +402,7 @@ void expand_macros(const char *fn, char *line, FILE *next)
 	while(lprint)
 	{
 		//fprintf(next, "%d|%s\n", linenum, lprint);
-		fprintf(next, "%s|%s\n", header, lprint);
+		fprintf(next, "%s,%d|%s\n", fname, linenum, lprint);
 		lprint = strtok(NULL, "\n");
 	}
 }

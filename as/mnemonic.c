@@ -142,7 +142,7 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, const char *fn, i
 
 int get_reg_num(char *arg, const char *fn, int linenum)
 {
-	if(arg[0] != 'r') error(fn, linenum, "expected register as 1st argument");
+	if(arg[0] != 'r') error(fn, linenum, "expected register as argument (\'%s\' is not a valid register)", arg);
 	int dst = strtol(arg+1, NULL, 10);
 	if(dst<0 || dst>7) error(fn, linenum, "invalid register \'r%d\'", dst);
 	return dst;
