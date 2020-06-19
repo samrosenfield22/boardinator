@@ -30,7 +30,7 @@ FILE *preprocessed;
 //
 bool parse_cmd_args(int argc, const char **argv);
 uint16_t assemble(FILE *preprocessed);
-void assemble_line(char *machine, char *line, int linenum);
+void assemble_line(char *machine, char *line, const char *fn, int linenum);
 
 void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_fmt fmt);
 
@@ -117,12 +117,15 @@ uint16_t assemble(FILE *preprocessed)
 		linenum = strtol(buf, NULL, 10);
 		buf = strtok(NULL, "|");*/
 		//strcpy(buf, inbuf);
-		bp = strtok(buf, "|");
+		char fn[161];
+		bp = strtok(buf, ",|");
+		strcpy(fn, bp);
+		bp = strtok(NULL, ",|");
 		linenum = strtol(bp, NULL, 10);
 		bp = strtok(NULL, "|");
 		strcpy(orig, bp);
 
-		assemble_line(machine, bp, linenum);
+		assemble_line(machine, bp, fn, linenum);
 		//print_machine(stdout, machine, wordcnt, orig, PRETTY);
 		print_machine(fout, machine, wordcnt, orig, VHDL);
 
@@ -132,7 +135,7 @@ uint16_t assemble(FILE *preprocessed)
 	return wordcnt;
 }
 
-void assemble_line(char *machine, char *line, int linenum)
+void assemble_line(char *machine, char *line, const char *fn, int linenum)
 {
 	char binbuf[OPCODE_BITS+1];
 	char *mnem, *arg0, *arg1;
@@ -141,12 +144,12 @@ void assemble_line(char *machine, char *line, int linenum)
 
 	tokenize_asm(&mnem, &arg0, &arg1, line);
 	if(!mnem)
-		error("in", linenum, "syntax error");
+		error(fn, linenum, "syntax error");
 		//bail("syntax error on line %d", linenum);
 
 	int opcode = mnemonic_to_opcode(mnem);
 	if(opcode == 0xFF)
-		error("in", linenum, "unrecognized mnemonic: \'%s\'", mnem);
+		error(fn, linenum, "unrecognized mnemonic \'%s\'", mnem);
 		//bail("unrecognized mnemonic: \'%s\' on line %d", mnem, linenum);
 
 	binstring(binbuf, opcode, OPCODE_BITS);
@@ -163,7 +166,7 @@ void assemble_line(char *machine, char *line, int linenum)
 	binstring(machine+INSTR_BITS-OPCODE_BITS, opcode, OPCODE_BITS);
 		
 	//format the rest of the machine word
-	mnemonic_table[opcode].format(machine, arg0, arg1, linenum);
+	mnemonic_table[opcode].format(machine, arg0, arg1, fn, linenum);
 
 	//output machine code
 	//putchar('\t'); print_machine(stdout, machine, true);

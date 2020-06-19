@@ -34,18 +34,25 @@
 #define TEMPFILE4 "tempfile4.asm"
 #define TEMPFILE5 "tempfile5.asm"
 #define TEMPFILE6 "tempfile6.asm"
+#define TEMPFILE7 "tempfile7.asm"
 
-void iterate_file(FILE *fp, FILE *next, void (*process)(char *line, FILE *next));
+#define MAX_INCLUDES	(100)
 
+//void iterate_file(FILE *fp, FILE *next, void (*process)(char *line, FILE *next));
+void iterate_file(const char *inpath, const char *outpath, void (*process)(const char *fn, char *line, FILE *next),
+	bool overwrite);
 FILE *preprocess(const char *fpath);
 
-void remove_comments_add_linenums(char *line, FILE *next);
+void remove_comments_add_linenums(const char *fn, char *line, FILE *next);
 //void expand_pseudos(char *line, FILE *next);
-void load_labels(char *line, FILE *next);
+void expand_includes(const char *fn, char *line, FILE *next);
+bool add_include_file(const char *fpath);
+bool all_includes_processed(void);
+void load_labels(const char *fn, char *line, FILE *next);
+void load_macros(const char *fn, char *line, FILE *next);
+void expand_macros(const char *fn, char *line, FILE *next);
 
-void load_macros(char *line, FILE *next);
-void expand_macros(char *line, FILE *next);
-char *strrepl(char *line, const char *from, const char *to);
+char *strrepl(char *line, const char *from, const char *to, bool repl_all);
 
 //this might belong in a different file
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);

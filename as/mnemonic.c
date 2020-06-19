@@ -76,44 +76,44 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 }*/
 
 
-void format_machine_dst_literal(char *machine, char *arg0, char *arg1, int linenum)
+void format_machine_dst_literal(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 	//if(arg0[0] != 'r') error("in", linenum, "expected register as 1st argument"); //bail("line %d: expected register as argument", linenum);
 	//int dst = arg0[1] - '0';
 	//int dst = strtol(arg0+1, NULL, 10);
 	//if(dst<0 || dst>7) error("in", linenum, "invalid register r%d", dst);
-	int dst = get_reg_num(arg0, linenum);
+	int dst = get_reg_num(arg0, fn, linenum);
 	binstring(machine+8, dst, 3);
 
 	int lit = strtol(arg1, NULL, 0);	
 	binstring(machine, lit, 8);
 }
 
-void format_machine_dst_src(char *machine, char *arg0, char *arg1, int linenum)
+void format_machine_dst_src(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 
 	//if(arg0[0] != 'r') {printf("ruh roh! problem on line %d\n", linenum); exit(-1);}
 	//int dst = arg0[1] - '0';
-	int dst = get_reg_num(arg0, linenum);
+	int dst = get_reg_num(arg0, fn, linenum);
 	binstring(machine+8, dst, 3);
 
 	//if(arg1[0] != 'r') {printf("error: expected register as dest argument to %s\n", mnem); exit(-1);};
 	//if(arg1[0] != 'r') {bail("expected register as dest argument on line %d", linenum); exit(-1);};
 	//int src = arg1[1] - '0';
-	int src = get_reg_num(arg1, linenum);
+	int src = get_reg_num(arg1, fn, linenum);
 	binstring(machine, src, 3);
 }
 
 
-void format_machine_single_op(char *machine, char *arg0, char *arg1, int linenum)
+void format_machine_single_op(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 	//if(arg0[0] != 'r') bail("expected register as argument on line %d\n", linenum);
 	//int dst = arg0[1] - '0';
-	int dst = get_reg_num(arg0, linenum);
+	int dst = get_reg_num(arg0, fn, linenum);
 	binstring(machine+8, dst, 3);
 }
 
-void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum)
+void format_machine_jmp(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 	uint16_t addr = search_symbol(arg0, LABEL);
 	//printf("\t\t found label %s!!\n", arg0);
@@ -121,7 +121,7 @@ void format_machine_jmp(char *machine, char *arg0, char *arg1, int linenum)
 	binstring(machine, addr, 10);
 }
 
-void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
+void format_machine_sfr(char *machine, char *arg0, char *arg1, const char *fn, int linenum)
 {
 
 	//look up SFR name in table
@@ -132,18 +132,18 @@ void format_machine_sfr(char *machine, char *arg0, char *arg1, int linenum)
 	//getsfr r0, MEMCTL
 	//if(arg0[0] != 'r') bail("expected register as argument on line %d", linenum);
 	//int dst = arg0[1] - '0';
-	int dst = get_reg_num(arg0, linenum);
+	int dst = get_reg_num(arg0, fn, linenum);
 	binstring(machine+8, dst, 3);
 
 	int addr = strtol(arg1, NULL, 0);
 	binstring(machine, addr, 8);
 }
 
-int get_reg_num(char *arg, int linenum)
+int get_reg_num(char *arg, const char *fn, int linenum)
 {
-	if(arg[0] != 'r') error("in", linenum, "expected register as 1st argument");
+	if(arg[0] != 'r') error(fn, linenum, "expected register as 1st argument");
 	int dst = strtol(arg+1, NULL, 10);
-	if(dst<0 || dst>7) error("in", linenum, "invalid register r%d", dst);
+	if(dst<0 || dst>7) error(fn, linenum, "invalid register \'r%d\'", dst);
 	return dst;
 }
 
