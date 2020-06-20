@@ -25,10 +25,6 @@ architecture Behavioral of alu is
     
     signal adder_out, subt_out, xor_out, and_out, or_out: std_logic_vector(7 downto 0);
     signal lsl_out, lsr_out: std_logic_vector(7 downto 0);
-    --signal subt_out:    std_logic_vector(7 downto 0);
-    --signal xor_out:     std_logic_vector(7 downto 0);
-    --signal and_out:     std_logic_vector(7 downto 0);
-    --signal lsl_out:     std_logic_vector
     
     signal flags_int:   std_logic_vector(2 downto 0) := (others => '0');
     signal operand: unsigned(4 downto 0);
@@ -40,6 +36,8 @@ begin
                 adder_out when operand=ADDL_OP else
                 subt_out when operand=SUB_OP else
                 subt_out when operand=SUBL_OP else
+                lsl_out when operand=LSL_OP else
+                lsr_out when operand=LSR_OP else
                 xor_out when operand=XOR_OP else
                 and_out when operand=AND_OP else
                 or_out when operand=OR_OP else
@@ -53,6 +51,8 @@ begin
 
     adder_out <= std_logic_vector(unsigned(a) + unsigned(b));
     subt_out <= std_logic_vector(unsigned(a) - unsigned(b));
+    lsl_out <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b))));
+    lsr_out <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b))));
     xor_out <= a XOR b;
     and_out <= a AND b;
     or_out <= a OR b;

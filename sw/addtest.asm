@@ -19,6 +19,16 @@
 
 	subl	sp,6
 
+	shift_r_test:
+	set 	r0,0x80
+	set 	r1,0
+	set 	r2,2
+	shift_r_loop:
+	cmp 	r0,r1
+	jeq		end
+	lsr 	r0,r2
+	jmp 	shift_r_loop
+
+
 	end:
 	jmp		end
-	

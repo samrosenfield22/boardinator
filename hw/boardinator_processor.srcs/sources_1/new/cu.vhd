@@ -123,7 +123,7 @@ begin
     dst <= ir(10 downto 8);
     src <= ir(2 downto 0);
     --lit <= ir(7 downto 0);
-    lit <=  pc(7 downto 0) when operand = 19 else
+    lit <=  pc(7 downto 0) when operand = GETPCL_OP else
             "000000" & pc(9 downto 8) when operand = GETPCH_OP else
             ir(7 downto 0);
     

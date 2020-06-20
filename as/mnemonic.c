@@ -12,6 +12,8 @@ mnem_entry mnemonic_table[] =
 	{"addl", format_machine_reg_literal},
 	{"sub", format_machine_double_reg},
 	{"subl", format_machine_reg_literal},
+	{"lsl", format_machine_double_reg},
+	{"lsr", format_machine_double_reg},
 	{"xor", format_machine_double_reg},
 	{"and", format_machine_double_reg},
 	{"or", format_machine_double_reg},
