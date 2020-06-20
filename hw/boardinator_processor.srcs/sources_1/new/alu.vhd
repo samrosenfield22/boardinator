@@ -1,21 +1,4 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 06/12/2020 10:33:13 AM
--- Design Name: 
--- Module Name: alu - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
 ----------------------------------------------------------------------------------
 
 
@@ -26,10 +9,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use work.opcodes.all;
 
 entity alu is
     Port ( a : in STD_LOGIC_VECTOR (7 downto 0);
@@ -43,28 +23,32 @@ end alu;
 architecture Behavioral of alu is
     signal mux_out:     std_logic_vector(7 downto 0) := (others => '0');
     
-    signal adder_out:   std_logic_vector(7 downto 0);
-    signal subt_out:    std_logic_vector(7 downto 0);
-    signal xor_out:     std_logic_vector(7 downto 0);
-    signal and_out:     std_logic_vector(7 downto 0);
-    signal or_out:     std_logic_vector(7 downto 0);
+    signal adder_out, subt_out, xor_out, and_out, or_out: std_logic_vector(7 downto 0);
+    signal lsl_out, lsr_out: std_logic_vector(7 downto 0);
+    --signal subt_out:    std_logic_vector(7 downto 0);
+    --signal xor_out:     std_logic_vector(7 downto 0);
+    --signal and_out:     std_logic_vector(7 downto 0);
+    --signal lsl_out:     std_logic_vector
     
     signal flags_int:   std_logic_vector(2 downto 0) := (others => '0');
-    --etc
+    signal operand: unsigned(4 downto 0);
+    
 begin
-    mux_out <=  b when op="00000" else              --set
-                b when op="00001" else              --mov
-                adder_out when op="00010" else      --add
-                adder_out when op="00011" else      --addl
-                subt_out when op="00100" else       --sub
-                subt_out when op="00101" else       --subl
-                xor_out when op="00110" else        --xor
-                and_out when op="00111" else        --and
-                or_out when op="01000" else         --or
-                "00000000" when op="01001" else     --cmp (only sets flags)
+    mux_out <=  b when operand=SET_OP else
+                b when operand=MOV_OP else
+                adder_out when operand=ADD_OP else
+                adder_out when operand=ADDL_OP else
+                subt_out when operand=SUB_OP else
+                subt_out when operand=SUBL_OP else
+                xor_out when operand=XOR_OP else
+                and_out when operand=AND_OP else
+                or_out when operand=OR_OP else
+                --lsl_out when op="xxxxx" else
+                --lsr_out when op="xxxxx" else
+                "00000000" when operand=CMP_OP else
                 --...
-                b when op="10011" else              --setpcl
-                b when op="10100" else              --setpch
+                b when operand=GETPCL_OP else
+                b when operand=GETPCH_OP else
                 "00000000";
 
     adder_out <= std_logic_vector(unsigned(a) + unsigned(b));
@@ -76,17 +60,17 @@ begin
     --flags
     process(a,b,op)
     begin
-        if(op = "01001") then   --cmp
+        if(operand=CMP_OP) then
             if(a=b) then
-                flags_int(0) <= '1';
+                flags_int(EF_FLAG) <= '1';
             else
-                flags_int(0) <= '0';
+                flags_int(EF_FLAG) <= '0';
             end if;
             
             if(a>b) then
-                flags_int(1) <= '1';
+                flags_int(GLF_FLAG) <= '1';
             else
-                flags_int(1) <= '0';
+                flags_int(GLF_FLAG) <= '0';
             end if;
             
             --flags <= flags_int;
@@ -96,17 +80,17 @@ begin
     process(clk)
     begin
         if(clk'event and clk='1') then
-            if(op="00010" or op="00011") then --add or addl
+            if(operand=ADD_OP or operand=ADDL_OP) then
                 if(unsigned(adder_out) < unsigned(a)) then  --overflow
-                    flags_int(2) <= '1';
+                    flags_int(OF_FLAG) <= '1';
                 else
-                    flags_int(2) <= '0';
+                    flags_int(OF_FLAG) <= '0';
                 end if;
-            elsif(op="00100" or op="00101") then --sub or subl
+            elsif(operand=SUB_OP or operand=SUBL_OP) then
                 if(unsigned(subt_out) > unsigned(a)) then  --underflow
-                    flags_int(2) <= '1';
+                    flags_int(OF_FLAG) <= '1';
                 else
-                    flags_int(2) <= '0';
+                    flags_int(OF_FLAG) <= '0';
                 end if;
             end if;
         end if;
@@ -116,5 +100,6 @@ begin
     y <= mux_out;
     flags <= flags_int;
     
+    operand <= unsigned(op);
 
 end Behavioral;

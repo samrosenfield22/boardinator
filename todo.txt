@@ -2,14 +2,17 @@ boardinator -- to do
 -------------------------------
 
 assembler:
-include directives -- preprocess() should work on files, and call itself resursively
-symbols table includes macros, jump labels, and subroutine names
+include directives -- preprocess() should work on files, and call itself resursively ... DONE
+symbols table includes macros, jump labels, and subroutine names ....................... DONE
 opcode/mnemonic table should include format info ............ DONE
-pseudoinstructions for call/ret
+pseudoinstructions for call/ret ............................. DONE
+.function/.endfunction should conditionally asssemble functions
+local .defines for functions
+more math.asm routines
 
 hardware:
 try and reduce clocks per instruction to 2 .................. DONE
-add pushrpc, poppc instructions
+add pushrpc, poppc instructions ............................. DONE
 add library w enum for mnemonics
 make alu instructions 3-args (add r1,r2,r3)
 add sfrs

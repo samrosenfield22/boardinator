@@ -6,7 +6,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+use work.opcodes.all;
 
 
 entity datapath is
@@ -64,6 +66,7 @@ architecture Behavioral of datapath is
      
      signal a_sig, b_sig, y_sig, rf_in, stack_addr, stack_output: std_logic_vector(7 downto 0);
      signal alu_b_in: std_logic_vector(7 downto 0);
+     signal operand: unsigned(4 downto 0);
 begin
     regfile: rf port map (
         clk => clk,
@@ -96,23 +99,14 @@ begin
     ovflw => open
     );
     
-    --register file input mux (selects between ALU Y and literal
---    process(op, lit, y_sig, stack_output)
---    begin
---        if(op="00000") then
---            rf_in <= lit;
---        elsif(op="01110" or op="01111") then
---            rf_in <= stack_output;
---        else
---            rf_in <= y_sig;
---        end if;
---    end process;
-
+    
     --alu b input is a literal for instructions:
     --set, addl, subl, getpcl, getpch
-    process(op, lit, b_sig)
+    process(operand, lit, b_sig)
     begin
-        if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
+        if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or operand=GETPCL_OP or operand=GETPCH_OP) then
+        --if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
+        --if(operand=SET_OP or operand=ADDL_OP or op="00101" or op="10011" or op="10100") then
             alu_b_in <= lit;
         else
             alu_b_in <= b_sig;
@@ -122,7 +116,8 @@ begin
     --register file input mux (selects between ALU Y and stack output
     process(op, y_sig, stack_output)
     begin
-        if(op="10001" or op="10010") then
+        --if(op="10001" or op="10010") then
+        if(operand=SETSTK_OP or operand=GETSTK_OP) then
             rf_in <= stack_output;
         else
             rf_in <= y_sig;
@@ -143,5 +138,7 @@ begin
     
     a_readback <= a_sig;
     b_readback <= b_sig;
+    
+    operand <= unsigned(op);
 
 end Behavioral;

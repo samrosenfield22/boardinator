@@ -9,7 +9,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
---use work.opcodes.all;
+use work.opcodes.all;
 
 entity cu is
     Port (  instr_in : in STD_LOGIC_VECTOR (15 downto 0);
@@ -39,6 +39,8 @@ signal op_int: std_logic_vector(4 downto 0);
 signal addr_sig: std_logic_vector(9 downto 0);
 signal jmp_condition: std_logic;
 
+signal operand: unsigned(4 downto 0);
+
 begin
     
     fsm: process(rst, clk)
@@ -60,50 +62,51 @@ begin
                         cu_state <= execute;
                    
                     when execute =>
-                        if(unsigned(op_int) < 9) then  --ALU operation
+                        if(operand < CMP_OP) then  --ALU operation
                             data_en <= '1';
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(unsigned(op_int) = 9) then     --cmp
+                        elsif(operand = CMP_OP) then
                             data_en <= '0';
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(unsigned(op_int) < 17) then    --jmp operations
+                        elsif(operand <= JOVF_OP) then    --jmp operations
                             data_en <= '0';
                             
-                            if(op_int="01011") then --jmp
+                            if(operand = JMP_OP) then --jmp
                                 pc <= addr_sig;
-                            elsif(op_int="01100") then  --jeq
-                                if(flags(0)='1') then pc <= addr_sig;
+                            elsif(operand = JEQ_OP) then  --jeq
+                                if(flags(EF_FLAG)='1') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(op_int="01101") then  --jne
-                                if(flags(0)='0') then pc <= addr_sig;
+                            elsif(operand = JNE_OP) then  --jne
+                                if(flags(EF_FLAG)='0') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(op_int="01110") then  --jgt
-                                if(flags(1)='1' and flags(0)='0') then pc <= addr_sig;
+                            elsif(operand = JGT_OP) then  --jgt
+                                if(flags(GLF_FLAG)='1' and flags(EF_FLAG)='0') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(op_int="01111") then  --jlt
-                                if(flags(1)='0' and flags(0)='0') then pc <= addr_sig;
+                            elsif(operand = JLT_OP) then  --jlt
+                                if(flags(GLF_FLAG)='0' and flags(EF_FLAG)='0') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(op_int="10000") then  --jovf
-                                if(flags(2)='1') then pc <= addr_sig;
+                            elsif(operand = JOVF_OP) then  --jovf
+                                if(flags(OF_FLAG)='1') then pc <= addr_sig;
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
 
-                        elsif(unsigned(op_int) < 19) then   --stack operations
+                        elsif((operand = SETSTK_OP) or (operand = GETSTK_OP)) then
                             
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                            if(unsigned(op_int) = 17) then  --setstk
+                            if(operand = SETSTK_OP) then  --setstk
                                 stack_we <= '1';
                                 data_en <= '0';
                             else    --getstk
                                 stack_we <= '0';
                                 data_en <= '1';
                             end if;
-                        elsif(unsigned(op_int) < 21) then   --getpcl/h
+                        elsif((operand = GETPCL_OP) or (operand = GETPCH_OP)) then
                             data_en <= '1';
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(unsigned(op_int) = 21) then   --setpc
+                        elsif(operand = SETPC_OP) then
                             data_en <= '0';
                             pc <= a_readback(1 downto 0) & b_readback;
+                        --else we got problems
                         
                         end if;
                         
@@ -120,14 +123,17 @@ begin
     dst <= ir(10 downto 8);
     src <= ir(2 downto 0);
     --lit <= ir(7 downto 0);
-    lit <=  pc(7 downto 0) when unsigned(op_int)=19 else
-            "000000" & pc(9 downto 8) when unsigned(op_int)=20 else
+    lit <=  pc(7 downto 0) when operand = 19 else
+            "000000" & pc(9 downto 8) when operand = GETPCH_OP else
             ir(7 downto 0);
     
     addr_sig <= ir(9 downto 0);
     
     pc_out <= pc;
     op <= op_int;
+    
+    --
+    operand <= unsigned(op_int);
     
 
 end Behavioral;

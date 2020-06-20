@@ -31,7 +31,7 @@ architecture Behavioral of processor_tb is
     type prog_mem_t is array (999 downto 0) of std_logic_vector(15 downto 0);
     signal prog_rom: prog_mem_t :=
     (    
-    	0 => "0000000010101010",		--	set 	r0,0x2A
+    			0 => "0000000000101010",		--	set 	r0,0x2A
 		1 => "0000000111100001",		--	set 	r1,0xE1
 		2 => "0000001010001000",		--	set 	r2,0x88
 		3 => "0000001111111111",		--	set 	r3,0xFF

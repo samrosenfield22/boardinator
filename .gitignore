@@ -5,7 +5,9 @@
 
 as/*.asm
 as/*.bin
-tempfile.asm
+
+tempfile*.asm
+
 
 
 hw/boardinator_processor.cache
