@@ -19,15 +19,30 @@
 
 	subl	sp,6
 
-	shift_r_test:
-	set 	r0,0x80
-	set 	r1,0
-	set 	r2,2
-	shift_r_loop:
-	cmp 	r0,r1
-	jeq		end
-	lsr 	r0,r2
-	jmp 	shift_r_loop
+	;shift_r_test:
+	;set 	r0,0x80
+	;set 	r1,0
+	;set 	r2,2
+	;shift_r_loop:
+	;cmp 	r0,r1
+	;jeq		end
+	;lsr 	r0,r2
+	;jmp 	shift_r_loop
+
+
+	set 	r0,0
+	set 	r1,1
+	set 	r2,0
+	set 	r3,1
+	shift_loop:
+	push	r3
+	push	r1
+	push	r0
+	call	lsl16
+	cmp 	r0,r2
+	jne 	shift_loop
+	cmp 	r1,r2
+	jne 	shift_loop
 
 
 	end:

@@ -144,14 +144,15 @@ void remove_comments_add_linenums(const char *fn, char *line, FILE *next)
 			case '\0':
 				goto line_preprocessed;
 				break;
+			case ';':
+				*p++ = '\n';
+				*p = '\0';
+				goto line_preprocessed;
+				//break;
 			case '|':
 				//printf("buf:\n%s\n", line);
 				//bail("found illegal character \'|\'");
 				error(fn, linenum, "found illegal character \'|\'");
-				break;
-			case ';':
-				*p++ = '\n';
-				*p = '\0';
 				break;
 				
 			goto next_line;

@@ -66,16 +66,39 @@ add16:
 lsl16:
 	enter
 
+	;save some regs
+	push 	r2
+	push 	r3
+	push	r4
+
 	getarg	r0,0
 	getarg	r1,1
 	getarg	r2,2
 
-	;cmp		r2,8
-	;jl		
+	set 	r3,8
+	cmp		r2,r3
+	jlt		lsl16_shift_less_than_half
 
-	;shift more than 8 bits
-	;getarg	
+	lsl16_shift_half:
+	set 	r1,0
+	getarg	r0,1
+	lsl 	r0,r2
+	jmp 	lsl16_exit
+
+	;upper = (upper<<b) | (lower>>(8-b))
+	lsl16_shift_less_than_half:
+	lsl 	r0,r2
+	set 	r3,8
+	sub 	r3,r2	;r3 = 8-b
+	mov 	r4,r1
+	lsr 	r4,r3
+	or 		r0,r4
+
+	lsl 	r1,r2
 
 	lsl16_exit:
+	pop		r4
+	pop		r3
+	pop		r2
 	leave
 	ret

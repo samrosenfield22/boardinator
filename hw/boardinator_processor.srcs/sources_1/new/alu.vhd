@@ -58,22 +58,24 @@ begin
     or_out <= a OR b;
     
     --flags
-    process(a,b,op)
+    process(a,b,op,clk)
     begin
-        if(operand=CMP_OP) then
-            if(a=b) then
-                flags_int(EF_FLAG) <= '1';
-            else
-                flags_int(EF_FLAG) <= '0';
+        if(clk'event and clk='1') then
+            if(operand=CMP_OP) then
+                if(a=b) then
+                    flags_int(EF_FLAG) <= '1';
+                else
+                    flags_int(EF_FLAG) <= '0';
+                end if;
+                
+                if(a>b) then
+                    flags_int(GLF_FLAG) <= '1';
+                else
+                    flags_int(GLF_FLAG) <= '0';
+                end if;
+                
+                --flags <= flags_int;
             end if;
-            
-            if(a>b) then
-                flags_int(GLF_FLAG) <= '1';
-            else
-                flags_int(GLF_FLAG) <= '0';
-            end if;
-            
-            --flags <= flags_int;
         end if;
     end process;
     
