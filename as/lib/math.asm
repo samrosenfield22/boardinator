@@ -16,8 +16,11 @@
 ; return:
 ; [r0:r1], the sum
 ; r2, 1 if the addition overflowed, else 0
-add16:
+	add16:
 	enter
+
+	;save some regs
+	push 	r3
 
 	getarg	r0,0	;a_hi
 	getarg	r1,1	;a_lo
@@ -49,6 +52,7 @@ add16:
 	set 	r2,1
 
 	add16_exit:
+	pop		r3
 	leave
 	ret
 
@@ -63,13 +67,12 @@ add16:
 ;
 ; return:
 ; [r0:r1], the shifted word
-lsl16:
+	lsl16:
 	enter
 
 	;save some regs
 	push 	r2
 	push 	r3
-	push	r4
 
 	getarg	r0,0
 	getarg	r1,1
@@ -97,8 +100,95 @@ lsl16:
 	lsl 	r1,r2
 
 	lsl16_exit:
-	pop		r4
 	pop		r3
 	pop		r2
+	leave
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; u16 mult8(u8 a, u8 b)
+;
+; multiplies 2 8-bit numbers using the shift-and-add method
+;
+; args:
+; a and b, the multiplicands
+;
+; return:
+; [r0:r1], the product
+	mult8:
+	enter
+
+	;u16 sum=0
+	;u8 mask=1
+	;for(u8 i=0; i<8; i++)
+	;	if(b & mask)
+	;		sum += (a<<i)
+	;	mask<<=1
+
+	;i=0, sum=0, mask=1
+	set 	r2,0	;i = 0
+	mklcl 	3
+	set 	r0,0
+	setlcl	0,r0	;sum (hi) = 0
+	setlcl	1,r0	;sum (lo) = 0
+	set 	r0,1
+	setlcl	2,r0	;mask = 1
+
+	mult8_loop:
+
+	;if(i > 7) goto exit
+	set 	r3,7
+	cmp 	r2,r3
+	jgt 	mult8_exit
+
+	;if((b & mask) != 0) ...
+	getarg	r1,1	;b
+	getlcl	r3,2	;mask
+	and 	r1,r3
+	set 	r3,0
+	cmp		r1,r3
+	jne		mult8_shift_and_add
+	jmp		mult8_loop_end
+
+	mult8_shift_and_add:
+
+	;a<<i
+	set 	r0,0
+	getarg	r1,0	;a
+	push	r2		;shift by i bits
+	push	r1
+	push	r0
+	call	lsl16
+	subl	sp,3
+
+	;sum += (a<<i)
+	getlcl	r3,0	;sum
+	getlcl	r4,1
+	push	r4
+	push	r3
+	push	r1
+	push	r0
+	mov		r4,r2	;add16 is going to overwrite r2 (i) with the overflow boolean
+	call	add16
+	subl	sp,4
+	setlcl	0,r0
+	setlcl	1,r1
+	mov		r2,r4
+
+	mult8_loop_end:
+
+	;mask<<=1
+	getlcl	r0,2
+	set 	r1,1
+	lsl 	r0,r1
+	setlcl	2,r0
+
+	;i++
+	addl 	r2,1
+	jmp 	mult8_loop
+
+	mult8_exit:
+	getlcl	r0,0
+	getlcl	r1,1
 	leave
 	ret

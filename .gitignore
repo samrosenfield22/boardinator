@@ -4,7 +4,7 @@
 *.exe
 
 as/*.asm
-as/*.bin
+*.bin
 
 tempfile*.asm
 

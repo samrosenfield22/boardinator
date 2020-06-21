@@ -394,7 +394,7 @@ void expand_macros(const char *fn, char *line, FILE *next)
 						lp++;
 						
 						strcpy(macrolabel[j], lp);
-						printf("\tgot label: \'%s\'\n", macrolabel[j]);
+						//printf("\tgot label: \'%s\'\n", macrolabel[j]);
 						*mp = ':';
 						mp++;
 						//printf("\tmacro text restored: %s\n", macrotext);
@@ -413,7 +413,7 @@ void expand_macros(const char *fn, char *line, FILE *next)
 
 					labels_to_mangle--;
 				}
-				printf("after mangling:\n%s\n\n", macrotext);
+				//printf("after mangling:\n%s\n\n", macrotext);
 
 
 				/*while(strchr(macrotext, ':'))

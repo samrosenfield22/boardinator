@@ -40,7 +40,6 @@ int main(int argc, const char **argv)
 	if(!parse_cmd_args(argc, argv))
 		printf("exiting...\n");
 
-	printf("preprocessing...\n");
 	preprocessed = preprocess(argv[1]);
 
 	uint16_t wordcnt = assemble(preprocessed);
