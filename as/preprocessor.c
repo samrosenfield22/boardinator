@@ -310,9 +310,12 @@ void expand_macros(const char *fn, char *line, FILE *next)
 					//point p to the start of the replace-string, rp to the end of it
 					char *p = strstr(incpy, tok);
 					char *rp = p + strlen(tok) + 1;	//push r5\n...
-					rp = strpbrk(rp, ",\t\n");
-					if(symbols_table[i].arg2)
-						rp = strpbrk(rp, "\t\n");
+					printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
+					while(*rp==' ' || *rp=='\t' || *rp=='\n') rp++;
+					while(!(*rp==' ' || *rp=='\t' || *rp=='\n' || *rp=='\0')) rp++;
+					printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
+					//if(symbols_table[i].arg2)
+					//	rp = strpbrk(rp, " \t\0");
 
 					strncpy(repltarget, p, rp-p);
 					repltarget[rp-p] = '\0';
@@ -362,9 +365,10 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				int tempargs = ((bool)(symbols_table[i].arg1)) + ((bool)(symbols_table[i].arg2));
 				printf("-----------------------\nmacro with %d args\ntok is %s\n", tempargs, tok);
 				printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
-					incpy, repltarget, symbols_table[i].expand);
+					incpy, repltarget, macrotext);
+					//incpy, repltarget, symbols_table[i].expand);
 				//if(strstr(incpy, "setlcl")) getchar();
-				tokrepl(incpy, repltarget, macrotext, false);
+				strrepl(incpy, repltarget, macrotext, false);
 				//printf("main macro replaced\n%s\n", incpy);
 
 				printf("expanded main: %s\n", incpy);

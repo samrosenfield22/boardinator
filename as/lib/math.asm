@@ -125,9 +125,15 @@
 	;		sum += (a<<i)
 	;	mask<<=1
 
-	;i=0, sum=0, mask=1
-	set 	r2,0	;i = 0
+	;reserve 3 bytes of locals
 	mklcl 	3
+
+	;save some regs
+	push 	r2
+	push 	r3
+
+	;i=0, sum=0, mask=1
+	set 	r2,0	;i = 0	
 	set 	r0,0
 	setlcl	0,r0	;sum (hi) = 0
 	setlcl	1,r0	;sum (lo) = 0
@@ -190,5 +196,7 @@
 	mult8_exit:
 	getlcl	r0,0
 	getlcl	r1,1
+	pop 	r3
+	pop		r2
 	leave
 	ret
