@@ -168,12 +168,12 @@
 	push	r3
 	push	r1
 	push	r0
-	mov		r4,r2	;add16 is going to overwrite r2 (i) with the overflow boolean
+	mov		r3,r2	;add16 is going to overwrite r2 (i) with the overflow boolean
 	call	add16
 	subl	sp,4
 	setlcl	0,r0
 	setlcl	1,r1
-	mov		r2,r4
+	mov		r2,r3
 
 	mult8_loop_end:
 

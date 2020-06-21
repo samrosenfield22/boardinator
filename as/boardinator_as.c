@@ -37,6 +37,12 @@ void print_machine(FILE *stream, char *word, uint16_t addr, char *src, machine_f
 
 int main(int argc, const char **argv)
 {
+
+	/*char stuff[200] = "well hi there test code!\ni hope you'll work!\n";
+	tokrepl(stuff, "i", "iiii", true);
+	puts(stuff);
+	return 0;*/
+
 	if(!parse_cmd_args(argc, argv))
 		printf("exiting...\n");
 

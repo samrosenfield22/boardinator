@@ -35,8 +35,10 @@
 #define TEMPFILE5 "tempfile5.asm"
 #define TEMPFILE6 "tempfile6.asm"
 #define TEMPFILE7 "tempfile7.asm"
+#define TEMPFILE8 "tempfile8.asm"
 
 #define MAX_INCLUDES	(100)
+
 
 //void iterate_file(FILE *fp, FILE *next, void (*process)(char *line, FILE *next));
 void iterate_file(const char *inpath, const char *outpath, void (*process)(const char *fn, char *line, FILE *next),
@@ -53,6 +55,8 @@ void load_macros(const char *fn, char *line, FILE *next);
 void expand_macros(const char *fn, char *line, FILE *next);
 
 char *strrepl(char *line, const char *from, const char *to, bool repl_all);
+char *tokrepl(char *line, const char *from, const char *to, bool repl_all);
+char *replace_in_string(char *line, const char *from, const char *to, bool repl_all, bool only_tokens);
 
 //this might belong in a different file
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code);

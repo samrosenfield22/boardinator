@@ -15,48 +15,6 @@ int inc_cnt = 0, inc_next = 0;
 
 FILE *preprocess(const char *fpath)
 {
-	/*FILE *fp = fopen(fpath, "r");
-	if(!fp)
-		bail("couldnt open file %s", fpath);
-
-	//open all tempfiles
-	FILE *temp1, *temp2, *temp3, *temp4, *temp5, *temp6;
-	temp1 = fopen(TEMPFILE1, "w+");
-	if(!temp1)
-		bail("failed to open %s", TEMPFILE1);
-	temp2 = fopen(TEMPFILE2, "w+");
-	if(!temp2)
-		bail("failed to open %s", TEMPFILE2);
-	temp3 = fopen(TEMPFILE3, "w+");
-	if(!temp3)
-		bail("failed to open %s", TEMPFILE3);
-	temp4 = fopen(TEMPFILE4, "w+");
-	if(!temp4)
-		bail("failed to open %s", TEMPFILE4);
-	temp5 = fopen(TEMPFILE5, "w+");
-	if(!temp5)
-		bail("failed to open %s", TEMPFILE5);
-	temp6 = fopen(TEMPFILE6, "w+");
-	if(!temp6)
-		bail("failed to open %s", TEMPFILE6);
-
-
-	iterate_file(fp, temp1, remove_comments_add_linenums);
-	iterate_file(temp1, temp2, load_macros);
-	//dump_symbols(MACRO); exit(0);
-	iterate_file(temp2, temp3, expand_macros);
-	//printf("\n\n--------------------------------\n");
-	//char tline[161] = "55|\taddl\tsp,5\n";
-	//char tline[161] = "55|\tpush r5\n";
-	//char tline[161] = "55|\tsetlcl 1,r3\n";
-	//expand_macros(tline, temp4);
-	//exit(0);
-	iterate_file(temp3, temp4, expand_macros);
-	iterate_file(temp4, temp5, expand_macros);
-	//printf("expanding pseudos...\n"); iterate_file(temp3, temp4, expand_pseudos);		//this is gonna get deleted once we support double-arg macros
-	iterate_file(temp5, temp6, load_labels);
-	*/
-
 	//clear TEMPFILE2, since it gets appended to (from each include file) without deleting
 	FILE *fclear = fopen(TEMPFILE2, "w");
 	fclose(fclear);
@@ -78,22 +36,15 @@ FILE *preprocess(const char *fpath)
 	}
 	
 	iterate_file(TEMPFILE2, TEMPFILE3, load_macros, true);
+	//dump_symbols(MACRO); exit(0);
 	iterate_file(TEMPFILE3, TEMPFILE4, expand_macros, true);
 	iterate_file(TEMPFILE4, TEMPFILE5, expand_macros, true);
 	iterate_file(TEMPFILE5, TEMPFILE6, expand_macros, true);
-	iterate_file(TEMPFILE6, TEMPFILE7, load_labels, true);
+	iterate_file(TEMPFILE6, TEMPFILE7, expand_macros, true);
+	iterate_file(TEMPFILE7, TEMPFILE8, load_labels, true);
 
-	FILE *preprocessed = fopen(TEMPFILE7, "r");
+	FILE *preprocessed = fopen(TEMPFILE8, "r");
 	return preprocessed;
-	
-
-	/*fclose(temp1);
-	fclose(temp2);
-	fclose(temp3);
-	fclose(temp4);
-	fclose(temp5);
-
-	return temp6;*/
 }
 
 //file must already be open
@@ -317,28 +268,15 @@ void expand_macros(const char *fn, char *line, FILE *next)
 			//printf("%s\n", tok);
 			if(strcmp(tok, symbols_table[i].name)==0)
 			{
-				//printf("expanding macro %s\n", tok);
-				/*if(strcmp(tok, "mklcl")==0)
-				{
-					printf("found mklcl\n");
-					getchar();
-				}*/
-
 				//if the macro has an argument, grab it
 				char argfield[241];
-				//strcpy(tok_w_args, lcpy);
+
 				char *argp, *arg1in, *arg2in;
 				if(symbols_table[i].arg1)
 				{
-					//printf("macro \'%s\' defined with default args: %s, %s\n",
-					//	tok, symbols_table[i].arg1, symbols_table[i].arg2);
-					//argin = strtok(NULL, " \t\n");
-					//argin = strtok(NULL, "\t\n");
-
 					argp = tok + strlen(tok) + 1;
 					strcpy(argfield, argp);
-					//argfield = tok_w_args + strlen(tok_w_args) + 1;
-					//printf("\targ string: %s\n", argfield);
+
 					arg1in = strtok(argfield, ",\n");
 					if(!arg1in)
 						error(fname, linenum, "missing arg to macro %s", tok);
@@ -349,8 +287,6 @@ void expand_macros(const char *fn, char *line, FILE *next)
 							error(fname, linenum, "missing 2nd arg to macro %s", tok);
 
 					}
-					//printf("\tmacro has args: %s, %s\n", arg1in, arg2in);
-					//strcpy(argbuf, arg1in);
 				}
 
 				//expand the macro
@@ -362,17 +298,29 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				char repltarget[241];
 				if(symbols_table[i].arg1)
 				{
-					char *p = incpy;
+					/*char *p = strstr(incpy, tok);
 					while(*p!=' ' && *p!='\t') p++;
 					while(*p!=',' && *p!='\n' && *p!='\0') p++;
 					if(symbols_table[i].arg2)
 						while(*p!='\n' && *p!='\0') p++;
 
-					strncpy(repltarget, incpy, p-incpy+1);
-					repltarget[p-incpy+1] = '\0';
+					strncpy(repltarget, p, p-incpy+1);
+					repltarget[p-incpy+1] = '\0';*/
+
+					//point p to the start of the replace-string, rp to the end of it
+					char *p = strstr(incpy, tok);
+					char *rp = p + strlen(tok) + 1;	//push r5\n...
+					rp = strpbrk(rp, ",\t\n");
+					if(symbols_table[i].arg2)
+						rp = strpbrk(rp, "\t\n");
+
+					strncpy(repltarget, p, rp-p);
+					repltarget[rp-p] = '\0';
 				}
 				else
 					strcpy(repltarget, tok);
+				//char *p = strstr(incpy, tok);
+				//strcpy(repltarget, p);
 
 				//if the macro contains labels, mangle them
 				char macrotext[241];
@@ -394,10 +342,8 @@ void expand_macros(const char *fn, char *line, FILE *next)
 						lp++;
 						
 						strcpy(macrolabel[j], lp);
-						//printf("\tgot label: \'%s\'\n", macrolabel[j]);
 						*mp = ':';
 						mp++;
-						//printf("\tmacro text restored: %s\n", macrotext);
 					}
 					else
 						break;
@@ -409,54 +355,29 @@ void expand_macros(const char *fn, char *line, FILE *next)
 
 					//replace all occurences
 					strrepl(macrotext, macrolabel[labels_to_mangle-1], macromangled, true);
-					//printf("after mangling:\n%s\n\n", macrotext);
-
 					labels_to_mangle--;
 				}
 				//printf("after mangling:\n%s\n\n", macrotext);
 
-
-				/*while(strchr(macrotext, ':'))
-				{
-					printf("-------------\n\tbefore mangling:\n%s\n\n", macrotext);
-					//grab the label
-					char *mp = strchr(macrotext, ':');
-					*mp = '\0';
-					char *lp = mp;
-					while(*lp != ' ' && *lp != '\t') lp--;
-					lp++;
-					char macrolabel[241], macromangled[281];
-					strcpy(macrolabel, lp);
-					printf("\tgot label: \'%s\'\n", macrolabel);
-					*mp = ':';
-					printf("\tmacro text restored: %s\n", macrotext);
-
-					//mangle it
-					sprintf(macromangled, "%s_mangled_%s_%d", macrolabel, fn, linenum);
-					printf("\tmangled: \'%s\'\n", macromangled);
-
-					//replace all occurences
-					strrepl(macrotext, macrolabel, macromangled, true);
-					printf("after mangling:\n%s\n\n", macrotext);
-				}*/
-
-				//printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
-				//	incpy, repltarget, symbols_table[i].expand);
+				int tempargs = ((bool)(symbols_table[i].arg1)) + ((bool)(symbols_table[i].arg2));
+				printf("-----------------------\nmacro with %d args\ntok is %s\n", tempargs, tok);
+				printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
+					incpy, repltarget, symbols_table[i].expand);
 				//if(strstr(incpy, "setlcl")) getchar();
-				strrepl(incpy, repltarget, macrotext, false);
+				tokrepl(incpy, repltarget, macrotext, false);
 				//printf("main macro replaced\n%s\n", incpy);
+
+				printf("expanded main: %s\n", incpy);
 
 				//substitute "default args" with actual args
 				if(symbols_table[i].arg1)
-				{
-					//printf("replacing %s\nwith %s\n", symbols_table[i].arg1, arg1in);
-					//printf("at (%s,%d)\n\n", fname, linenum);
-					strrepl(incpy, symbols_table[i].arg1, arg1in, true);
-				}
+					tokrepl(incpy, symbols_table[i].arg1, arg1in, true);
 				if(symbols_table[i].arg2)
-					strrepl(incpy, symbols_table[i].arg2, arg2in, true);
-				//printf("after expanding: %s\n", incpy);
+					tokrepl(incpy, symbols_table[i].arg2, arg2in, true);
+				printf("after expanding: %s\n", incpy);
+				//getchar();
 				//return;
+				goto print_expanded_macro;
 			}
 
 			tok = strtok(NULL, " ,\t\n");
@@ -464,8 +385,11 @@ void expand_macros(const char *fn, char *line, FILE *next)
 	}
 
 	
+
 	//print each line of the expanded macro, prefixing with line numbers
-	char *lprint = strtok(incpy, "\n");
+	char *lprint;
+	print_expanded_macro:
+	lprint = strtok(incpy, "\n");
 	while(lprint)
 	{
 		//fprintf(next, "%d|%s\n", linenum, lprint);
@@ -522,57 +446,63 @@ void load_labels(const char *fn, char *line, FILE *next)
 //if repl_all is true, replace every instance. if it's false, only replace the 1st.
 char *strrepl(char *line, const char *from, const char *to, bool repl_all)
 {
-	//printf("-----------------\nreplacing string\n%s\nwith\n%s\n", from, to);
-	//printf("in %s\n", line);
-	//printf("lengths %d,%d,%d\n", strlen(line), strlen(from), strlen(to));
+	return replace_in_string(line, from, to, repl_all, false);
+}
 
-	char *p = strstr(line, from);
-	while(p)
+//replace from with to (in line) -- only the 1st occurence. return a ptr to the start of the replaced string
+//if repl_all is true, replace every instance. if it's false, only replace the 1st.
+char *tokrepl(char *line, const char *from, const char *to, bool repl_all)
+{
+	return replace_in_string(line, from, to, repl_all, true);
+}
+
+//replace from with to (in line) -- only the 1st occurence. return a ptr to the start of the replaced string
+//if repl_all is true, replace every instance. if it's false, only replace the 1st.
+char *replace_in_string(char *line, const char *from, const char *to, bool repl_all, bool only_tokens)
+{
+	char *search_pt = line;
+	char *p;
+	while((p = strstr(search_pt, from)))
 	{
 		char *newline = malloc(strlen(line) + strlen(to) + 1);
 		if(!newline) return NULL;
 
 		//save the insert/replace location
 		char *loc = p;
+		char *after = p + strlen(from);
+
+		
+
+		//if we're replacing tokens, the "from" substring must be delimited by whitespace/commas
+		if(only_tokens)
+		{
+			if(!(loc==line || *(loc-1)==' ' || *(loc-1)=='\t' || *(loc-1)==',' || *(loc-1)=='\n'))
+				goto next_substring;
+			if(!(after==(line+strlen(line)) || *after==' ' || *after=='\t' || *after==',' || *after=='\n'))
+				goto next_substring;
+		}
 
 		*p = '\0';
-		p += strlen(from);
-		sprintf(newline, "%s%s%s", line, to, p);
-
+		sprintf(newline, "%s%s%s", line, to, after);
 		strcpy(line, newline);
-		free(newline);
+		
 
 		if(!repl_all)
 			return loc;
 
 		//search again, starting from after the previous replacement
-		char *search_pt = loc+strlen(to);
-		if(search_pt > (line + strlen(line)))
-			break;
-		p = strstr(search_pt, from);
-	}
-
-	/*char *p = strstr(line, from);
-	if(p)
-	{
-		char *newline = malloc(strlen(line) + strlen(to) + 1);
-		if(!newline) return NULL;
-
-		//save the insert/replace location
-		char *loc = p;
-
-		*p = '\0';
-		p += strlen(from);
-		sprintf(newline, "%s%s%s", line, to, p);
-
-		strcpy(line, newline);
+		next_substring:
 		free(newline);
 
-		return loc;
-	}*/
+		search_pt = loc+strlen(to);
+		if(search_pt > (line + strlen(line)))
+			break;
+		//p = strstr(search_pt, from);
+	}
 
 	return NULL;
 }
+
 
 void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
 {
