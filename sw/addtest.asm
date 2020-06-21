@@ -16,8 +16,7 @@
 	push	r1
 	push	r0
 	call	add16
-
-	subl	sp,6
+	subl	sp,4
 
 	;shift_r_test:
 	;set 	r0,0x80
@@ -39,6 +38,7 @@
 	push	r1
 	push	r0
 	call	lsl16
+	subl	sp,3
 	cmp 	r0,r2
 	jne 	shift_loop
 	cmp 	r1,r2

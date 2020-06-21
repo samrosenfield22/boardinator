@@ -356,8 +356,8 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				//expand the macro
 				while(strtok(NULL, " ,\t\n"));	//does this do anything?
 
-				//we're replacing the macro, AND any args -- "push r5" needs to get expanded (not just)
-				//the "push" part.
+				//we're replacing the macro, AND any args -- "push r5" needs to get expanded (not just
+				//the "push" part).
 				//repltarget is the entire part that gets replaced 
 				char repltarget[241];
 				if(symbols_table[i].arg1)
@@ -374,17 +374,83 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				else
 					strcpy(repltarget, tok);
 
+				//if the macro contains labels, mangle them
+				char macrotext[241];
+				char macromangled[281];
+				strcpy(macrotext, symbols_table[i].expand);
+				char macrolabel[8][241];
+				int labels_to_mangle = 0;
+				char *mp = macrotext;
+				for(int j=0; j<8; j++)
+				{
+					mp = strchr(mp, ':');
+					if(mp)
+					{
+						labels_to_mangle++;
+						//grab the label
+						*mp = '\0';
+						char *lp = mp;
+						while(*lp != ' ' && *lp != '\t') lp--;
+						lp++;
+						
+						strcpy(macrolabel[j], lp);
+						printf("\tgot label: \'%s\'\n", macrolabel[j]);
+						*mp = ':';
+						mp++;
+						//printf("\tmacro text restored: %s\n", macrotext);
+					}
+					else
+						break;
+				}
+				while(labels_to_mangle)
+				{
+					sprintf(macromangled, "%s_mangled_%s_%d", macrolabel[labels_to_mangle-1], fn, linenum);
+					//printf("\tmangled: \'%s\'\n", macromangled);
+
+					//replace all occurences
+					strrepl(macrotext, macrolabel[labels_to_mangle-1], macromangled, true);
+					//printf("after mangling:\n%s\n\n", macrotext);
+
+					labels_to_mangle--;
+				}
+				printf("after mangling:\n%s\n\n", macrotext);
+
+
+				/*while(strchr(macrotext, ':'))
+				{
+					printf("-------------\n\tbefore mangling:\n%s\n\n", macrotext);
+					//grab the label
+					char *mp = strchr(macrotext, ':');
+					*mp = '\0';
+					char *lp = mp;
+					while(*lp != ' ' && *lp != '\t') lp--;
+					lp++;
+					char macrolabel[241], macromangled[281];
+					strcpy(macrolabel, lp);
+					printf("\tgot label: \'%s\'\n", macrolabel);
+					*mp = ':';
+					printf("\tmacro text restored: %s\n", macrotext);
+
+					//mangle it
+					sprintf(macromangled, "%s_mangled_%s_%d", macrolabel, fn, linenum);
+					printf("\tmangled: \'%s\'\n", macromangled);
+
+					//replace all occurences
+					strrepl(macrotext, macrolabel, macromangled, true);
+					printf("after mangling:\n%s\n\n", macrotext);
+				}*/
+
 				//printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
 				//	incpy, repltarget, symbols_table[i].expand);
 				//if(strstr(incpy, "setlcl")) getchar();
-				strrepl(incpy, repltarget, symbols_table[i].expand, false);
+				strrepl(incpy, repltarget, macrotext, false);
 				//printf("main macro replaced\n%s\n", incpy);
 
 				//substitute "default args" with actual args
 				if(symbols_table[i].arg1)
 				{
-					printf("replacing %s\nwith %s\n", symbols_table[i].arg1, arg1in);
-					printf("at (%s,%d)\n\n", fname, linenum);
+					//printf("replacing %s\nwith %s\n", symbols_table[i].arg1, arg1in);
+					//printf("at (%s,%d)\n\n", fname, linenum);
 					strrepl(incpy, symbols_table[i].arg1, arg1in, true);
 				}
 				if(symbols_table[i].arg2)
