@@ -28,17 +28,24 @@ constant JNE_OP:    opcode := 15;
 constant JGT_OP:    opcode := 16;
 constant JLT_OP:    opcode := 17;
 constant JOVF_OP:   opcode := 18;
-constant SETSTK_OP: opcode := 19;
-constant GETSTK_OP: opcode := 20;
+constant SETMEM_OP: opcode := 19;
+constant GETMEM_OP: opcode := 20;
 constant GETPCL_OP: opcode := 21;
 constant GETPCH_OP: opcode := 22;
 constant SETPC_OP:  opcode := 23;
 --constant _OP:    opcode := 2
 
+--memory regions
+constant STACK_REGION:  integer := 0;
+constant UNDEF_REGION:  integer := 1;
+constant SFR_REGION:    integer := 2;
+
 --flag bits
 constant EF_FLAG:   integer := 0;
 constant GLF_FLAG:  integer := 1;
 constant OF_FLAG:   integer := 2;
+
+type memarray_t is array (1023 downto 0) of std_logic_vector(7 downto 0);
 
 
 end opcodes;

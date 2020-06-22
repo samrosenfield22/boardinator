@@ -20,13 +20,15 @@ entity datapath is
            en : in STD_LOGIC;
            
            stack_we : in STD_LOGIC;
-           --stack_addr_reg : in STD_LOGIC_VECTOR(2 downto 0);
+           stack_data_out : in STD_LOGIC_VECTOR(7 downto 0);
            
            out_word : out STD_LOGIC_VECTOR (7 downto 0);
            flags : out STD_LOGIC_VECTOR(2 downto 0);
            
            a_readback : out STD_LOGIC_VECTOR(7 downto 0);
-           b_readback : out STD_LOGIC_VECTOR(7 downto 0));
+           b_readback : out STD_LOGIC_VECTOR(7 downto 0);
+           
+           stkovflw : out STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -54,19 +56,10 @@ architecture Behavioral of datapath is
             flags : out STD_LOGIC_VECTOR (2 downto 0));
      end component;
      
-     component stack
-     Port ( we : in STD_LOGIC;
-           rst : in STD_LOGIC;
-           clk : in STD_LOGIC;
-           in_data : in STD_LOGIC_VECTOR (7 downto 0);
-           addr : in STD_LOGIC_VECTOR (7 downto 0);
-           out_data : out STD_LOGIC_VECTOR (7 downto 0);
-           ovflw : out STD_LOGIC);
-     end component;
-     
-     signal a_sig, b_sig, y_sig, rf_in, stack_addr, stack_output: std_logic_vector(7 downto 0);
+     signal a_sig, b_sig, y_sig, rf_in, stack_addr: std_logic_vector(7 downto 0);
      signal alu_b_in: std_logic_vector(7 downto 0);
      signal operand: unsigned(4 downto 0);
+     signal flags_sig: std_logic_vector(2 downto 0);
 begin
     regfile: rf port map (
         clk => clk,
@@ -86,17 +79,7 @@ begin
         op => op,
         clk => clk,
         y => y_sig,
-        flags => flags
-    );
-    
-    exec_stack: stack port map (
-    we => stack_we,
-    rst => rst,
-    clk => clk,
-    in_data => b_sig,
-    addr => stack_addr,
-    out_data => stack_output,
-    ovflw => open
+        flags => flags_sig
     );
     
     
@@ -114,23 +97,36 @@ begin
     end process;
     
     --register file input mux (selects between ALU Y and stack output
-    process(op, y_sig, stack_output)
+    process(op, y_sig, stack_data_out)
     begin
         --if(op="10001" or op="10010") then
-        if(operand=SETSTK_OP or operand=GETSTK_OP) then
-            rf_in <= stack_output;
+        if(operand=SETMEM_OP or operand=GETMEM_OP) then
+            rf_in <= stack_data_out;
         else
             rf_in <= y_sig;
         end if;
     end process;
     
     --stack address selector
-    process(stack_we, a_sig, b_sig)
+--    process(stack_we, a_sig, b_sig)
+--    begin
+--        if(stack_we = '1') then
+--            stack_addr <= a_sig;
+--        else
+--            stack_addr <= b_sig;
+--        end if;
+--    end process;
+    
+    --
+    process(flags_sig)
     begin
-        if(stack_we = '1') then
-            stack_addr <= a_sig;
+        if((flags_sig(OF_FLAG)='1') and 
+        (dst="110" or dst="111") and
+        (operand=ADD_OP or operand=ADDL_OP or operand=SUB_OP or operand=SUBL_OP)
+        ) then
+            stkovflw <= '0';
         else
-            stack_addr <= b_sig;
+            stkovflw <= '1';
         end if;
     end process;
     
@@ -138,6 +134,8 @@ begin
     
     a_readback <= a_sig;
     b_readback <= b_sig;
+    
+    flags <= flags_sig;
     
     operand <= unsigned(op);
 

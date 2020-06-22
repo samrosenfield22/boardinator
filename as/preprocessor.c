@@ -508,11 +508,12 @@ char *replace_in_string(char *line, const char *from, const char *to, bool repl_
 }
 
 
-void tokenize_asm(char **mnem, char **arg1, char **arg2, char *code)
+void tokenize_asm(char **mnem, char **arg1, char **arg2, char **arg3, char *code)
 {
 	*mnem = strtok(code, " \t\n");
 	*arg1 = strtok(NULL, " \t\n,");
-	*arg2 = strtok(NULL, " \t\n");
+	*arg2 = strtok(NULL, " \t\n,");
+	*arg3 = strtok(NULL, " \t\n");
 }
 
 bool is_whitespace(const char *str)

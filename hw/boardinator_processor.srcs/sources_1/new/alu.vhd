@@ -79,6 +79,7 @@ begin
         end if;
     end process;
     
+    --over/underflow
     process(clk)
     begin
         if(clk'event and clk='1') then

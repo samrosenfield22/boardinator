@@ -11,6 +11,12 @@
 	call	factorial
 	subl	sp,1
 
+	;
+	set 	r2,0
+	set 	r3,0x80
+	setmem	r2,r3,2
+	nop
+
 	end:
 	jmp		end
 
@@ -43,6 +49,7 @@
 	jmp		factorial_loop
 
 	factorial_exit:
+	;subl	sp,0x20		;should underflow the stack
 	mov		r0,r3
 	pop		r3
 	pop		r2
