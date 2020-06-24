@@ -81,6 +81,14 @@ architecture Behavioral of processor is
            global_rst : out STD_LOGIC);
      end component;
      
+     component timer_module
+     Port(
+        rst : in STD_LOGIC;
+        clk : in STD_LOGIC;
+        tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0)
+    );
+    end component;
+     
      signal rst: std_logic;
      
      signal op: std_logic_vector(4 downto 0);
@@ -155,6 +163,13 @@ begin
         clk => clk,
         rstcon_sfr => prog_mem_regs(512),
         global_rst => rst
+    );
+    
+    timer_mod: timer_module port map (
+        rst => rst,
+        clk => clk,
+        tmrcon_sfr => prog_mem_regs(513),
+        tmrcmp_sfr => prog_mem_regs(514)
     );
     
     --stack address selector

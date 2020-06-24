@@ -4,7 +4,13 @@ I.						Architecture
 II. 					ISA
 III.					Assembler
 	i. 						Features
-	ii. 					Tips
+	ii. 					Stack-manipulation macros
+	iii. 					Tips
+IV.						Peripherals
+	i.						General info
+	ii.						Reset
+	iii.					Timer
+
 
 ---------------------------------------------------------------------------------------
 I. Architecture
@@ -15,8 +21,22 @@ program addr:		10
 sfr addr:			8
 
 There are 8 general-purpose registers (r0-r7).
+R6 is the stack pointer, R7 is the base pointer.
+R4 and R5 are "working registers" -- they are modified during calling/returning from function calls, but are otherwise
+available.
 
-Calling convention: lmao not yet
+Calling convention:
+	* arguments are passed from right to left
+	* the caller cleans the arguments off the stack (ex. after calling a function with 2 args, use: subl sp,2)
+	* arguments start at *(bp-4) (and downward). local variables start at *bp (and upward).
+
+Memory:
+The processor contains a special region of memory, proc_mem. This memory is split into 256-byte regions, which are as follows:
+Region 0: stack
+Region 1: bss (unimplemented)
+Region 2: SFRs
+
+proc_mem can be read or written to using the getmem and setmem instructions.
 
 ---------------------------------------------------------------------------------------
 II. ISA
@@ -37,22 +57,18 @@ opcode	mnemonic	op0	op1			machine code		example				description
 01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
 01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
 01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
-10000	jovf		label 			000000aa aaaaaaaa	jovf label 			if(OF) goto label
-10001	setstk		adr src 		10000aaa 00000sss 	setstk r1,r0 		stack[adr] = src
-10010	getstk		dst adr 		10001ddd 00000aaa	getstk r1,r0 		dst = stack[adr]
+10000	jovf		label 			100000aa aaaaaaaa	jovf label 			if(OF) goto label
+10001	setmem		adr src rn 		10001aaa rn000sss 	setstk r1,r0 		mem[region & adr] = src
+10010	getmem		dst adr rn 		10010ddd rn000aaa	getstk r1,r0 		dst = mem[region & adr]
 10011	getpcl		dst 			10011ddd 00000000	getpcl r5			dst = pc[7:0]
 10100	getpch 		dst 			10100ddd 00000000	getpch r4			dst = pc[9:8]
 10101	setpc		rhi rlo			10101hhh 00000lll	setpc r4,r5			pc = (hi<<8) | lo
 
-10001	setmem		adr src rn 		10000aaa rn000sss 	setstk r1,r0 		stack[region & adr] = src
-10010	getmem		dst adr rn		10001ddd rn000aaa	getstk r1,r0 		dst = stack[region & adr]
-
-xxxxx	setsfr 		reg sfr			10010rrr ssssssss	setsfr r0,MEMCTL	sfr = reg (UNIMPLEMENTED)
-xxxxx	getsfr 		reg sfr 		10011rrr ssssssss	getsfr r0,MEMCTL	reg = sfr (UNIMPLEMENTED)
 
 Flags:
-EF (equal flag): set when cmp operands are equal
-GLF (greater/less than flag): set when op0>op1, cleared when op0<op1. in either case, EF is also cleared.
+Flags[0]	EF (equal flag): set when cmp operands are equal, cleared when cmp operands are not equal. unmodified during any other instruction.
+Flags[1]	GLF (greater/less than flag): set when op0>op1, cleared when op0<op1
+Flags[2]	OF (overflow flag): set when add or addl overflows, or when sub or subl underflows
 
 ---------------------------------------------------------------------------------------
 III. Assembler
@@ -63,23 +79,30 @@ Things it does support:
 * Comments (;)
 * Literals in decimal or hex (prefixed with 0x)
 * Labels (for jumps)
+* Include directives (.include "filename"). The file can be in the working directory, as/lib/, or as/.
+	* Unlike with a typical include directive, the included text is not added at the location of the directive -- it's appended to the end of the file.
+* Define directives (macros). These can have no arguments, or 1 or 2 arguments. Both terms must be wrapped in double quotes, ex.
+	.define "inc_by_1 reg" "addl reg,1"
 
-Things it does not support (yet):
-* Include directives (.include)
-* Define directives
-* Psuedoinstructions (call, ret)
+ii. Stack-manipulation macros
+Several standard macros are defined in stdmacros.asm (located in as/lib/). This includes macros for functions and stack manipulation, such as:
 
-ii. Tips
+Macro 	Example 		Description
+call 	call myfunc		call myfunc (which is specified with a jmp label)
+ret 	ret 			returns from a previous function call
+push 	push r2			pushes register r2 onto the stack
+pop 	pop r2			pops the value off the top of the stack into r2
+
+
+iii. Tips
 Notes about writing assembly code for the Boardinator
 
-* Unlike in fuller-featured instruction sets, Boardinator assembly only features 1 instruction for processing literals,
-the "set" instruction (which sets a given register to the literal value). Any other operation which involves a literal
-must be split into 2 instructions
+* The only ALU instructions which accept literals as arguments are; set, addl, subl. Any other operation which involves a literal must be split into 2 instructions
 Ex. to do
-	r0 += 10;
+	r0 ^= 0x0F
 You'd do:
-	set r1,10
-	add r0,r1
+	set r1,0x0F
+	xor r0,r1
 
 * "cmp" is the only instruction which modifies the flag bits -- it must be used for conditional jumps
 Ex. to do
@@ -89,4 +112,27 @@ You'd do:
 	cmp r0,r1
 	jgt label
 
+---------------------------------------------------------------------------------------
+IV. Peripherals
 
+i. General info
+Currently Boardinator has the following peripheral modules:
+reset, timer
+Eventualy it will also have:
+gpio, uart, vga, spi?, interrupt?
+
+Each peripheral is controlled by reading/writing to its SFRs (special function registers) using the setmem and getmem instructions.
+Ex
+set 	r1,TMRCMP
+set 	r0,0x55
+setmem 	r1,r0,SFR_REGION	;sets the TMRCMP register to 0x55
+
+This manual contains general info about each peripheral. For details about SFR specifics/using a peripheral, consult the SFR spreadsheet (docs/sfr_spec.xlsx)
+
+ii. Reset
+The reset module generates a global reset signal to restore all processor memory to a known state. It asserts this signal in response to several conditions: power-on-reset, software reset, external reset, stack over/underflow, or illegal opcode.
+Coming soon: the reset module will save the cause of the reset. 
+
+iii. Timer
+The timer module generates configurable delays. When the timer's clock (a prescaled version of the system clock) rises, an internal counter increments. When the counter value matches the setting of the TMRCMP register, [right now nothing happens].
+The 4-bit prescaler can be set to allow clock scaling from 1x to 32768x.
