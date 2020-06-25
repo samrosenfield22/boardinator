@@ -12,8 +12,8 @@ entity timer_module is
     Port(
         rst : in STD_LOGIC;
         clk : in STD_LOGIC;
-        tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0)
-        --tmrout_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+        tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+        tmrout_sfr : out STD_LOGIC_VECTOR (7 downto 0)
     );
 end timer_module;
     
@@ -33,9 +33,10 @@ architecture Behavioral of timer_module is
     signal scaled_clk: std_logic;
     
     --signal timer_cnt: std_logic_vector(7 downto 0) := (others => '0');
-    signal tmr_match: std_logic := '0';
+    signal tmr_match: std_logic;
+    signal tmr_on: std_logic;
 begin
-    
+    tmr_on <= tmrcon_sfr(7);
 
     gen_prescaler:
         for i in 0 to prescale_cnt-1 generate
@@ -47,7 +48,7 @@ begin
                 qnot => d_qnot_loop(i)
             );
     end generate gen_prescaler;
-    prescaler_clks(0) <= clk;
+    prescaler_clks(0) <= clk and tmr_on;
     prescale_sel <= tmrcon_sfr(3 downto 0);
     scaled_clk <= prescaler_clks(to_integer(unsigned(prescale_sel)));
     
@@ -69,8 +70,7 @@ begin
             end if;
         end if;
         
-        --tmrout_sfr <= timer_cnt;
-        --tmrcon_sfr(7) <= tmr_match;
+        tmrout_sfr(0) <= tmr_match;
     end process;
 
 end Behavioral;

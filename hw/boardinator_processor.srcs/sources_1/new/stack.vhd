@@ -15,7 +15,7 @@ entity prog_mem is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr, tmrout_sfr: in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
@@ -51,6 +51,7 @@ begin
             
             --set SFRs that are written to by peripherals
             prog_mem(RSTCAUSE+512) <= rstcause_sfr;
+            prog_mem(TMROUT+512) <= tmrout_sfr;
         end if;
     end process;
     

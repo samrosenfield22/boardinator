@@ -136,3 +136,4 @@ Coming soon: the reset module will save the cause of the reset.
 iii. Timer
 The timer module generates configurable delays. When the timer's clock (a prescaled version of the system clock) rises, an internal counter increments. When the counter value matches the setting of the TMRCMP register, [right now nothing happens].
 The 4-bit prescaler can be set to allow clock scaling from 1x to 32768x.
+The SFR calculator spreadsheet (docs/sfr_calculators.xlsx) has a section that calculates prescaler and TMRCMP settings for a given timer period.
