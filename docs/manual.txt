@@ -5,7 +5,8 @@ II. 					ISA
 III.					Assembler
 	i. 						Features
 	ii. 					Stack-manipulation macros
-	iii. 					Tips
+	iii.					Stack structure
+	iv. 					Tips
 IV.						Peripherals
 	i.						General info
 	ii.						Reset
@@ -29,6 +30,7 @@ Calling convention:
 	* arguments are passed from right to left
 	* the caller cleans the arguments off the stack (ex. after calling a function with 2 args, use: subl sp,2)
 	* arguments start at *(bp-4) (and downward). local variables start at *bp (and upward).
+For more information about the stack layout, see section III.iii, "Stack structure"
 
 Memory:
 The processor contains a special region of memory, proc_mem. This memory is split into 256-byte regions, which are as follows:
@@ -93,8 +95,34 @@ ret 	ret 			returns from a previous function call
 push 	push r2			pushes register r2 onto the stack
 pop 	pop r2			pops the value off the top of the stack into r2
 
+iii. Stack structure
+In typical function use, a stack frame is structured as such:
+0 arg2
+1 arg1
+2 arg0
+3 ret ()
+4 ret ()
+5 bp of previous
+6 local 0          <= bp
+7 local 1
+8                  <= sp
 
-iii. Tips
+Arguments start at *(bp-4), and local variables start at *bp.
+
+If a function does not make any calls (and therefore has no need to create its stack frame with enter/leave), a sp-based stack access scheme may be utilized to reduce code size and execution time. After calling this function, the stack will appear as such:
+0 arg2             <= bp
+1 arg1
+2 arg0
+3 ret ()
+4 ret ()
+6 local 0
+7 local 1
+8                  <= sp
+
+Arguments start at *(sp-(3 + locals)) -- alternatively, they can be read before creating locals. Local variables start at *(sp-1).
+
+
+iv. Tips
 Notes about writing assembly code for the Boardinator
 
 * The only ALU instructions which accept literals as arguments are; set, addl, subl. Any other operation which involves a literal must be split into 2 instructions

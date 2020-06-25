@@ -18,6 +18,8 @@
 	call	add16
 	subl	sp,4
 
+	jmp end
+
 	;shift_r_test:
 	;set 	r0,0x80
 	;set 	r1,0

@@ -16,45 +16,49 @@
 ; return:
 ; [r0:r1], the sum
 ; r2, 1 if the addition overflowed, else 0
+;
+; comments:
+; this function does not create a stack frame, and it uses sp-based offsets
+;
 	add16:
-	enter
 
-	;save some regs
-	push 	r3
+	subl sp,3
+	getmem r0,sp,STACK_REGION ;r0 is a_hi (arg0)
+	subl sp,1
+	getmem r1,sp,STACK_REGION ;r1 is a_lo (arg1)
+	subl sp,1
+	getmem r5,sp,STACK_REGION ;r5 is b_hi (arg2)
+	subl sp,1
+	getmem r4,sp,STACK_REGION ;r4 is b_lo (arg3)
+	addl sp,6
 
-	getarg	r0,0	;a_hi
-	getarg	r1,1	;a_lo
-	getarg	r2,3	;b_lo
-	getarg	r3,2	;b_hi
+	;
+	set r2,0
 
 	;add lower bytes
-	add 	r1,r2
-	jovf	add16_lo_ovflw
-	jmp 	add16_add_hi_bytes
+	add r1,r4
+	jovf add16_lo_ovflw
+	jmp add16_add_hi_bytes
 
 	add16_lo_ovflw:
-	addl 	r0,1
-	jovf	add16_hi_ovflw_1
-	jmp 	add16_add_hi_bytes
+	addl r0,1
+	jovf add16_hi_ovflw_1
+	jmp add16_add_hi_bytes
 
 	add16_hi_ovflw_1:
-	set 	r2,1
+	set r2,1
 
 	add16_add_hi_bytes:
-	add 	r0,r3
-	jovf	add16_hi_ovflw_2
-
-	;neither high addition overflowed
-	set 	r2,0
-	jmp 	add16_exit
+	add r0,r5
+	jovf add16_hi_ovflw_2
+	jmp add16_exit
 
 	add16_hi_ovflw_2:
-	set 	r2,1
+	set r2,1
 
 	add16_exit:
-	pop		r3
-	leave
 	ret
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; u16 lsl16(u16 n, u8 bits)
@@ -67,42 +71,41 @@
 ;
 ; return:
 ; [r0:r1], the shifted word
+;
+; comments:
+; this function does not create a stack frame, and it uses sp-based offsets
+;
 	lsl16:
-	enter
 
-	;save some regs
-	push 	r2
-	push 	r3
+	subl sp,3
+	getmem r0,sp,STACK_REGION ;r0 is in_hi (arg0)
+	subl sp,1
+	getmem r1,sp,STACK_REGION ;r1 is in_lo (arg1)
+	subl sp,1
+	getmem r2,sp,STACK_REGION ;r5 is bits (arg2)
+	addl sp,5
 
-	getarg	r0,0
-	getarg	r1,1
-	getarg	r2,2
-
-	set 	r3,8
-	cmp		r2,r3
+	set 	r5,8
+	cmp		r2,r5
 	jlt		lsl16_shift_less_than_half
 
 	lsl16_shift_half:
+	mov 	r0,r1
 	set 	r1,0
-	getarg	r0,1
 	lsl 	r0,r2
 	jmp 	lsl16_exit
 
 	;upper = (upper<<b) | (lower>>(8-b))
 	lsl16_shift_less_than_half:
-	lsl 	r0,r2
-	set 	r3,8
-	sub 	r3,r2	;r3 = 8-b
+	lsl 	r0,r2	;(upper<<b)
+	sub 	r5,r2	;r3 = 8-b
 	mov 	r4,r1
-	lsr 	r4,r3
+	lsr 	r4,r5	;lower>>(8-b)
 	or 		r0,r4
 
 	lsl 	r1,r2
 
 	lsl16_exit:
-	pop		r3
-	pop		r2
-	leave
 	ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,6 +118,7 @@
 ;
 ; return:
 ; [r0:r1], the product
+;
 	mult8:
 	enter
 
