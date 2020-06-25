@@ -45,6 +45,14 @@ constant EF_FLAG:   integer := 0;
 constant GLF_FLAG:  integer := 1;
 constant OF_FLAG:   integer := 2;
 
+--SFRs
+constant RSTCON:    integer := 0;
+constant RSTCAUSE:  integer := 1;
+constant TMRCON:    integer := 2;
+constant TMRCMP:    integer := 3;
+constant TMROUT:    integer := 4;
+
+
 type memarray_t is array (1023 downto 0) of std_logic_vector(7 downto 0);
 
 

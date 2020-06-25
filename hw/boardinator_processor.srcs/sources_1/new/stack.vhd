@@ -14,6 +14,9 @@ entity prog_mem is
            in_data : in STD_LOGIC_VECTOR (7 downto 0);
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
+           
+           rstcause_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
 end prog_mem;
@@ -24,6 +27,8 @@ architecture Behavioral of prog_mem is
 signal prog_mem: memarray_t := (others => "00000000");
 
 signal full_addr: std_logic_vector(9 downto 0);
+signal full_addr_num: integer range 0 to 1023;
+signal addr_sfr: integer range 0 to (1023 + 512);
 
 begin
 
@@ -31,15 +36,32 @@ begin
     begin
         if(rst='0') then
             prog_mem <= (others => "00000000");
-        elsif(we='1' and (clk'event and clk='1')) then
+        elsif(clk'event and clk='1') then
             --prog_mem(to_integer(unsigned(addr))) <= in_data;
-            prog_mem(to_integer(unsigned(full_addr))) <= in_data;
+            --prog_mem(to_integer(unsigned(full_addr))) <= in_data;
+            if(we='1') then
+                if( addr_sfr /= RSTCAUSE and
+                    --addr_sfr /= RSTCAUSE and
+                    addr_sfr /= TMROUT) then
+                    prog_mem(full_addr_num) <= in_data;
+                end if;
+            
+                
+            end if;
+            
+            --set SFRs that are written to by peripherals
+            prog_mem(RSTCAUSE+512) <= rstcause_sfr;
         end if;
     end process;
     
     
+    
+    
     full_addr <= region & addr;
-    out_data <= prog_mem(to_integer(unsigned(addr)));
+    full_addr_num <= to_integer(unsigned(full_addr));
+    addr_sfr <= full_addr_num + 512;
+    
+    out_data <= prog_mem(to_integer(unsigned(full_addr)));
     prog_mem_out <= prog_mem;
     
 end Behavioral;

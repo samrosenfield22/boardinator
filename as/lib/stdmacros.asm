@@ -25,8 +25,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;; SFR definitions
 
-.define	"RSTCON" "0"
-.define	"TMRCON" "1"
-.define "TMRCMP" "2"
-.define "TMROUT" "3"
+.define	"RSTCON" 	"0"
+.define "SWRST"		"0x80"
+
+.define "RSTCAUSE"	"1"
+
+.define	"TMRCON" "2"
+.define "TMRCMP" "3"
+.define "TMROUT" "4"
 

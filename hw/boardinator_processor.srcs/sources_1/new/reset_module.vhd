@@ -17,6 +17,8 @@ entity reset_module is
            clk : in STD_LOGIC;
            
            rstcon_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr : out STD_LOGIC_VECTOR (7 downto 0);
+           
            global_rst : out STD_LOGIC);
 end reset_module;
 
@@ -53,7 +55,7 @@ begin
                 rst_cnt_en <= '1';
                 por_rst <= '1';
                 rst_cnt <= (others => '0');
-                --rstcon_sfr(2 downto 0) <= rst_source;
+                --rstcause_sfr <= "00000" & rst_source;
             --else
             --    por_rst <= '0';
             end if;
@@ -63,12 +65,17 @@ begin
         end if;
     end process;
     
-    
-    rst_source <=   "000" when por_rst='0' else
-                    "001" when ext_rst='0' else
-                    "010" when sw_rst='0' else
-                    "011" when stkovf_rst='0' else
-                    "100" when ilglop_rst='0';
-  
+    process(global_rst_int)
+    begin
+        if(global_rst_int'event and global_rst_int='0') then
+            if(por_rst='0')     then rst_source <= "000";
+            elsif(ext_rst='0')     then rst_source <= "001";
+            elsif(sw_rst='0')      then rst_source <= "010";
+            elsif(stkovf_rst='0')  then rst_source <= "011";
+            elsif(ilglop_rst='0')  then rst_source <= "100";
+            else rst_source <= "111"; end if;
+        end if;
+    end process;
+    rstcause_sfr <= "00000" & rst_source;
 
 end Behavioral;

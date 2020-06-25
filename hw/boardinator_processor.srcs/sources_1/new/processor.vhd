@@ -67,6 +67,9 @@ architecture Behavioral of processor is
            in_data : in STD_LOGIC_VECTOR (7 downto 0);
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
+           
+           rstcause_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
      end component;
@@ -78,6 +81,7 @@ architecture Behavioral of processor is
            clk : in STD_LOGIC;
            
            rstcon_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr : out STD_LOGIC_VECTOR (7 downto 0);
            global_rst : out STD_LOGIC);
      end component;
      
@@ -106,6 +110,8 @@ architecture Behavioral of processor is
      
      signal prog_mem_regs: memarray_t;
      signal ilgl_op: std_logic;
+     
+     signal rstcause_sfr: std_logic_vector(7 downto 0);
 
 begin
     data_path: datapath port map (
@@ -152,6 +158,7 @@ begin
         in_data => b_readback,
         addr => stack_addr,
         region => region,
+        rstcause_sfr => rstcause_sfr,
         out_data => stack_data_out,
         prog_mem_out => prog_mem_regs
     );
@@ -161,15 +168,16 @@ begin
         stkovf_rst => stkovflw,
         ilglop_rst => ilgl_op,
         clk => clk,
-        rstcon_sfr => prog_mem_regs(512),
+        rstcon_sfr => prog_mem_regs(RSTCON + 512),
+        rstcause_sfr => rstcause_sfr,
         global_rst => rst
     );
     
     timer_mod: timer_module port map (
         rst => rst,
         clk => clk,
-        tmrcon_sfr => prog_mem_regs(513),
-        tmrcmp_sfr => prog_mem_regs(514)
+        tmrcon_sfr => prog_mem_regs(TMRCON + 512),
+        tmrcmp_sfr => prog_mem_regs(TMRCMP + 512)
     );
     
     --stack address selector

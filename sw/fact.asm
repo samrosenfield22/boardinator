@@ -5,16 +5,29 @@
 .include "math.asm"
 .include "stdmacros.asm"
 
+	;
+	set 	r2,RSTCAUSE
+	getmem 	r0,r2,SFR_REGION
+	set 	r3,0	;POR reset
+	cmp 	r3,r0
+	jeq 	main
+	set 	r3,1	;ext reset
+	cmp 	r3,r0
+	jeq 	main
+	bad_reset:
+	jmp 	bad_reset
+
+	main:
 	set		r0,5
 
 	push	r0
 	call	factorial
 	subl	sp,1
 
-	;
-	set 	r2,0
-	set 	r3,0x80
-	setmem	r2,r3,2
+	;set the SWRST bit of RSTCON
+	set 	r2,RSTCON
+	set 	r3,SWRST
+	setmem	r2,r3,SFR_REGION
 	nop
 
 	end:
