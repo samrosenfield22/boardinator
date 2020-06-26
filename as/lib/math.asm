@@ -23,13 +23,13 @@
 	add16:
 
 	subl sp,3
-	getmem r0,sp,STACK_REGION ;r0 is a_hi (arg0)
+	getm r0,sp,STACK_REGION,0 ;r0 is a_hi (arg0)
 	subl sp,1
-	getmem r1,sp,STACK_REGION ;r1 is a_lo (arg1)
+	getm r1,sp,STACK_REGION,0 ;r1 is a_lo (arg1)
 	subl sp,1
-	getmem r5,sp,STACK_REGION ;r5 is b_hi (arg2)
+	getm r5,sp,STACK_REGION,0 ;r5 is b_hi (arg2)
 	subl sp,1
-	getmem r4,sp,STACK_REGION ;r4 is b_lo (arg3)
+	getm r4,sp,STACK_REGION,0 ;r4 is b_lo (arg3)
 	addl sp,6
 
 	;
@@ -78,11 +78,11 @@
 	lsl16:
 
 	subl sp,3
-	getmem r0,sp,STACK_REGION ;r0 is in_hi (arg0)
+	getm r0,sp,STACK_REGION,0 ;r0 is in_hi (arg0)
 	subl sp,1
-	getmem r1,sp,STACK_REGION ;r1 is in_lo (arg1)
+	getm r1,sp,STACK_REGION,0 ;r1 is in_lo (arg1)
 	subl sp,1
-	getmem r2,sp,STACK_REGION ;r5 is bits (arg2)
+	getm r2,sp,STACK_REGION,0 ;r5 is bits (arg2)
 	addl sp,5
 
 	set 	r5,8

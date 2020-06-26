@@ -84,10 +84,11 @@ begin
     
     
     --alu b input is a literal for instructions:
-    --set, addl, subl, getpcl, getpch
+    --set, addl, subl, getpcl, getpch, setm
     process(operand, lit, b_sig)
     begin
-        if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or operand=GETPCL_OP or operand=GETPCH_OP) then
+        if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
+        operand=GETPCL_OP or operand=GETPCH_OP or operand=SETM_OP) then
         --if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
         --if(operand=SET_OP or operand=ADDL_OP or op="00101" or op="10011" or op="10100") then
             alu_b_in <= lit;
@@ -99,8 +100,8 @@ begin
     --register file input mux (selects between ALU Y and stack output
     process(op, y_sig, stack_data_out)
     begin
-        --if(op="10001" or op="10010") then
-        if(operand=SETMEM_OP or operand=GETMEM_OP) then
+        --if(operand=SETM_OP or operand=GETM_OP) then
+        if(operand=GETM_OP) then
             rf_in <= stack_data_out;
         else
             rf_in <= y_sig;

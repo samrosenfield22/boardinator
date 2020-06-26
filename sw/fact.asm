@@ -18,6 +18,7 @@
 	;jmp 	bad_reset
 
 	main:
+	;set 
 	set		r0,5
 
 	push	r0

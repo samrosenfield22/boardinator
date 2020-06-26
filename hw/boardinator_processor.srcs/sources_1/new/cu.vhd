@@ -93,13 +93,13 @@ begin
                                 else pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
 
-                        elsif((operand = SETMEM_OP) or (operand = GETMEM_OP)) then
+                        elsif((operand = SETM_OP) or (operand = GETM_OP)) then
                             
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                            if(operand = SETMEM_OP) then
+                            if(operand = SETM_OP) then
                                 stack_we <= '1';
-                                data_en <= '0';
-                            else    --getstk
+                                data_en <= '1';     --
+                            else    --getm
                                 stack_we <= '0';
                                 data_en <= '1';
                             end if;
@@ -130,6 +130,9 @@ begin
     --lit <= ir(7 downto 0);
     lit <=  saved_pc(7 downto 0) when operand = GETPCL_OP else
             "000000" & saved_pc(9 downto 8) when operand = GETPCH_OP else
+            "00000000" when operand = SETM_OP and ir(4 downto 3)="00" else
+            "00000001" when operand = SETM_OP and ir(4 downto 3)="01" else
+            "11111111" when operand = SETM_OP and ir(4 downto 3)="11" else
             ir(7 downto 0);
     mem_region <= ir(7 downto 6);
     

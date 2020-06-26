@@ -45,6 +45,7 @@ begin
                 --lsr_out when op="xxxxx" else
                 "00000000" when operand=CMP_OP else
                 --...
+                adder_out when operand=SETM_OP else
                 b when operand=GETPCL_OP else
                 b when operand=GETPCH_OP else
                 "00000000";

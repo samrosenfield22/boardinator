@@ -28,8 +28,8 @@ mnem_entry mnemonic_table[] =
 	{"jlt", format_machine_jmp},
 	{"jovf", format_machine_jmp},
 
-	{"setmem", format_machine_triple_reg},
-	{"getmem", format_machine_triple_reg},
+	{"setm", format_machine_quad_reg},
+	{"getm", format_machine_quad_reg},
 
 	{"getpcl", format_machine_single_op},
 	{"getpch", format_machine_single_op},
@@ -79,7 +79,7 @@ uint8_t mnemonic_to_opcode(const char *mnemonic)
 }*/
 
 
-void format_machine_reg_literal(char *machine, char *arg0, char *arg1, char *arg2, const char *fn, int linenum)
+void format_machine_reg_literal(char *machine, char *arg0, char *arg1, char *arg2, char *arg3, const char *fn, int linenum)
 {
 	//if(arg0[0] != 'r') error("in", linenum, "expected register as 1st argument"); //bail("line %d: expected register as argument", linenum);
 	//int dst = arg0[1] - '0';
@@ -88,11 +88,12 @@ void format_machine_reg_literal(char *machine, char *arg0, char *arg1, char *arg
 	int dst = get_reg_num(arg0, fn, linenum);
 	binstring(machine+8, dst, 3);
 
-	int lit = strtol(arg1, NULL, 0);	
+	//int lit = strtol(arg1, NULL, 0);	
+	int lit = get_arg_num(arg1, fn, linenum);
 	binstring(machine, lit, 8);
 }
 
-void format_machine_double_reg(char *machine, char *arg0, char *arg1, char *arg2, const char *fn, int linenum)
+void format_machine_double_reg(char *machine, char *arg0, char *arg1, char *arg2, char *arg3, const char *fn, int linenum)
 {
 
 	//if(arg0[0] != 'r') {printf("ruh roh! problem on line %d\n", linenum); exit(-1);}
@@ -107,7 +108,7 @@ void format_machine_double_reg(char *machine, char *arg0, char *arg1, char *arg2
 	binstring(machine, src, 3);
 }
 
-void format_machine_triple_reg(char *machine, char *arg0, char *arg1, char *arg2, const char *fn, int linenum)
+void format_machine_quad_reg(char *machine, char *arg0, char *arg1, char *arg2, char *arg3, const char *fn, int linenum)
 {
 
 	//if(arg0[0] != 'r') {printf("ruh roh! problem on line %d\n", linenum); exit(-1);}
@@ -121,12 +122,18 @@ void format_machine_triple_reg(char *machine, char *arg0, char *arg1, char *arg2
 	int src = get_reg_num(arg1, fn, linenum);
 	binstring(machine, src, 3);
 
-	int third = strtol(arg2, NULL, 10);
+	//int third = strtol(arg2, NULL, 10);
+	int third = get_arg_num(arg2, fn, linenum);
 	binstring(machine+6, third, 2);
+
+	//printf("arg3 is %s\n", arg3);
+	//int update = strtol(arg3, NULL, 10);
+	int update = get_arg_num(arg3, fn, linenum);
+	binstring(machine+3, update, 2);
 }
 
 
-void format_machine_single_op(char *machine, char *arg0, char *arg1, char *arg2, const char *fn, int linenum)
+void format_machine_single_op(char *machine, char *arg0, char *arg1, char *arg2, char *arg3, const char *fn, int linenum)
 {
 	//if(arg0[0] != 'r') bail("expected register as argument on line %d\n", linenum);
 	//int dst = arg0[1] - '0';
@@ -134,7 +141,7 @@ void format_machine_single_op(char *machine, char *arg0, char *arg1, char *arg2,
 	binstring(machine+8, dst, 3);
 }
 
-void format_machine_jmp(char *machine, char *arg0, char *arg1, char *arg2, const char *fn, int linenum)
+void format_machine_jmp(char *machine, char *arg0, char *arg1, char *arg2, char *arg3, const char *fn, int linenum)
 {
 	uint16_t addr = search_symbol(arg0, LABEL);
 	//printf("\t\t found label %s!!\n", arg0);
@@ -162,10 +169,18 @@ void format_machine_jmp(char *machine, char *arg0, char *arg1, char *arg2, const
 
 int get_reg_num(char *arg, const char *fn, int linenum)
 {
+	if(!arg) error(fn, linenum, "missing argument(s)");
 	if(arg[0] != 'r') error(fn, linenum, "expected register as argument (\'%s\' is not a valid register)", arg);
 	int dst = strtol(arg+1, NULL, 10);
 	if(dst<0 || dst>7) error(fn, linenum, "invalid register \'r%d\'", dst);
 	return dst;
+}
+
+int get_arg_num(char *arg, const char *fn, int linenum)
+{
+	if(!arg) error(fn, linenum, "missing argument");
+	int argnum = strtol(arg, NULL, 0);
+	return argnum;
 }
 
 /*

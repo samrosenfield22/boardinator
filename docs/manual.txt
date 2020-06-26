@@ -43,28 +43,30 @@ proc_mem can be read or written to using the getmem and setmem instructions.
 ---------------------------------------------------------------------------------------
 II. ISA
 opcode	mnemonic	op0	op1			machine code		example				description
-00000	set			dst	literal		00000ddd llllllll	set r0,0x40			dst = literal (literal can be dec or hex)
-00001	mov			dst src 		00001ddd 00000sss	mov r1,r0			dst = src
-00010	add			dst src 		00010ddd 00000sss	add r1,r0			dst += src
-00011	addl		dst lit 		00011ddd llllllll	addl r0,0x40		dst += literal
-00100	sub			dst src 		00011ddd 00000sss	sub r1,r0			dst -= src
-00101 	subl		dst lit 		00101ddd llllllll	subl r0,1			dst -= lit
-00110	xor			dst src 		00100ddd 00000sss	xor r1,r0			dst ^= src
-00111	and			dst src 		00101ddd 00000sss	and r1,r0			dst &= src
-01000	or			dst src 		00110ddd 00000sss	or r1,r0			dst |= src
-01001	cmp			dst src 		00111ddd 00000sss	cmp r1,r0			sets flags (Equal Flag and Greater Less Flag)
-01010	not			dst 			01010ddd 00000000	not r0				dst != dst
-01011	jmp 		label			010110aa aaaaaaaa	jmp label			goto label
-01100	jeq 		label			011000aa aaaaaaaa	jeq label			if(EF) goto label
-01101	jne 		label			011010aa aaaaaaaa	jne label			if(!EF) goto label
-01110	jgt 		label			011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
-01111	jlt 		label			011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
-10000	jovf		label 			100000aa aaaaaaaa	jovf label 			if(OF) goto label
-10001	setmem		adr src rn 		10001aaa rn000sss 	setstk r1,r0 		mem[region & adr] = src
-10010	getmem		dst adr rn 		10010ddd rn000aaa	getstk r1,r0 		dst = mem[region & adr]
-10011	getpcl		dst 			10011ddd 00000000	getpcl r5			dst = pc[7:0]
-10100	getpch 		dst 			10100ddd 00000000	getpch r4			dst = pc[9:8]
-10101	setpc		rhi rlo			10101hhh 00000lll	setpc r4,r5			pc = (hi<<8) | lo
+00000	set			dst	literal			00000ddd llllllll	set r0,0x40			dst = literal (literal can be dec or hex)
+00001	mov			dst src 			00001ddd 00000sss	mov r1,r0			dst = src
+00010	add			dst src 			00010ddd 00000sss	add r1,r0			dst += src
+00011	addl		dst lit 			00011ddd llllllll	addl r0,0x40		dst += literal
+00100	sub			dst src 			00011ddd 00000sss	sub r1,r0			dst -= src
+00101 	subl		dst lit 			00101ddd llllllll	subl r0,1			dst -= lit
+00110	xor			dst src 			00100ddd 00000sss	xor r1,r0			dst ^= src
+00111	lsl
+01000	lsr
+01001	and			dst src 			00101ddd 00000sss	and r1,r0			dst &= src
+01010	or			dst src 			00110ddd 00000sss	or r1,r0			dst |= src
+01011	cmp			dst src 			00111ddd 00000sss	cmp r1,r0			sets Equal and Greater/Less Than Flag
+01100	not			dst 				01010ddd 00000000	not r0				dst != dst
+01101	jmp 		label				010110aa aaaaaaaa	jmp label			goto label
+01110	jeq 		label				011000aa aaaaaaaa	jeq label			if(EF) goto label
+01111	jne 		label				011010aa aaaaaaaa	jne label			if(!EF) goto label
+10000	jgt 		label				011100aa aaaaaaaa	jgt label			if(GLF & !EF) goto label
+10001	jlt 		label				011110aa aaaaaaaa	jlt label			if(!GLF & !EF) goto label
+10010	jovf		label 				100000aa aaaaaaaa	jovf label 			if(OF) goto label
+10011	setm		adr src rn update 	10001aaa rr0uusss 	setstk r1,r0 		mem[region & adr] = src; adr += update
+10100	getm		dst adr rn update	10010ddd rr0uuaaa	getstk r1,r0 		dst = mem[region & adr]; adr += update
+10101	getpcl		dst 				10011ddd 00000000	getpcl r5			dst = pc[7:0]
+10110	getpch 		dst 				10100ddd 00000000	getpch r4			dst = pc[9:8]
+10111	setpc		rhi rlo				10101hhh 00000lll	setpc r4,r5			pc = (hi<<8) | lo
 
 
 Flags:

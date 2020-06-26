@@ -59,7 +59,7 @@ char *tokrepl(char *line, const char *from, const char *to, bool repl_all);
 char *replace_in_string(char *line, const char *from, const char *to, bool repl_all, bool only_tokens);
 
 //this might belong in a different file
-void tokenize_asm(char **mnem, char **arg1, char **arg2, char **arg3, char *code);
+void tokenize_asm(char **mnem, char **arg1, char **arg2, char **arg3, char **arg4, char *code);
 
 bool is_whitespace(const char *str);
 
