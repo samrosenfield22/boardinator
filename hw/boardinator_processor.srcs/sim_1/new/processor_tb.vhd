@@ -197,8 +197,8 @@ architecture Behavioral of processor_tb is
 		163 => "1010110100000000",		--	getpcl r5
 		164 => "1011010000000000",		-- getpch r4
 		165 => "0001110100001011",		--  addl r5,11
-		166 => "1001000010101000",		-- jovf inc_upper_mangled_tempfile3.asm_181
-		167 => "0110100010101001",		--  jmp pushret_mangled_tempfile3.asm_181
+		166 => "1001000010101000",		-- jovf inc_upper_mangled_tempfile3.asm_171
+		167 => "0110100010101001",		--  jmp pushret_mangled_tempfile3.asm_171
 		168 => "0001110000000001",		-- addl r4,1
 		169 => "1001111000000100",		-- setmem r6,r4,0
 		170 => "0001111000000001",		-- addl r6,1
@@ -224,8 +224,8 @@ architecture Behavioral of processor_tb is
 		190 => "1010110100000000",		--	getpcl r5
 		191 => "1011010000000000",		-- getpch r4
 		192 => "0001110100001011",		--  addl r5,11
-		193 => "1001000011000011",		-- jovf inc_upper_mangled_tempfile3.asm_192
-		194 => "0110100011000100",		--  jmp pushret_mangled_tempfile3.asm_192
+		193 => "1001000011000011",		-- jovf inc_upper_mangled_tempfile3.asm_182
+		194 => "0110100011000100",		--  jmp pushret_mangled_tempfile3.asm_182
 		195 => "0001110000000001",		-- addl r4,1
 		196 => "1001111000000100",		-- setmem r6,r4,0
 		197 => "0001111000000001",		-- addl r6,1

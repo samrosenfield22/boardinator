@@ -310,10 +310,10 @@ void expand_macros(const char *fn, char *line, FILE *next)
 					//point p to the start of the replace-string, rp to the end of it
 					char *p = strstr(incpy, tok);
 					char *rp = p + strlen(tok) + 1;	//push r5\n...
-					printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
+					//printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
 					while(*rp==' ' || *rp=='\t' || *rp=='\n') rp++;
 					while(!(*rp==' ' || *rp=='\t' || *rp=='\n' || *rp=='\0')) rp++;
-					printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
+					//printf("\t--- rp at char %d (\'%c\')\n", rp-p, *rp);
 					//if(symbols_table[i].arg2)
 					//	rp = strpbrk(rp, " \t\0");
 
@@ -362,23 +362,23 @@ void expand_macros(const char *fn, char *line, FILE *next)
 				}
 				//printf("after mangling:\n%s\n\n", macrotext);
 
-				int tempargs = ((bool)(symbols_table[i].arg1)) + ((bool)(symbols_table[i].arg2));
-				printf("-----------------------\nmacro with %d args\ntok is %s\n", tempargs, tok);
-				printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
-					incpy, repltarget, macrotext);
+				//int tempargs = ((bool)(symbols_table[i].arg1)) + ((bool)(symbols_table[i].arg2));
+				//printf("-----------------------\nmacro with %d args\ntok is %s\n", tempargs, tok);
+				//printf("\n\tbefore expanding: %s\t\treplacing token %s\n\t\twith %s\n",
+				//	incpy, repltarget, macrotext);
 					//incpy, repltarget, symbols_table[i].expand);
 				//if(strstr(incpy, "setlcl")) getchar();
 				strrepl(incpy, repltarget, macrotext, false);
 				//printf("main macro replaced\n%s\n", incpy);
 
-				printf("expanded main: %s\n", incpy);
+				//printf("expanded main: %s\n", incpy);
 
 				//substitute "default args" with actual args
 				if(symbols_table[i].arg1)
 					tokrepl(incpy, symbols_table[i].arg1, arg1in, true);
 				if(symbols_table[i].arg2)
 					tokrepl(incpy, symbols_table[i].arg2, arg2in, true);
-				printf("after expanding: %s\n", incpy);
+				//printf("after expanding: %s\n", incpy);
 				//getchar();
 				//return;
 				goto print_expanded_macro;

@@ -22,9 +22,8 @@ typedef enum
 } machine_fmt;
 
 //
-//FILE *fin, *fout, *ftemp, *ftemp2;
-FILE *fin, *fout;
-FILE *preprocessed;
+FILE *fin, *fout, *preprocessed;
+const char *outfilename;
 
 
 //
@@ -50,6 +49,7 @@ int main(int argc, const char **argv)
 
 	uint16_t wordcnt = assemble(preprocessed);
 	printf("Assembly successful (0x%04x words, 0x%04x bytes)\n", wordcnt, wordcnt<<1);
+	printf("Output written to %s\n", outfilename);
 
 	fclose(fin);
 	fclose(preprocessed);
@@ -65,9 +65,9 @@ int main(int argc, const char **argv)
 
 bool parse_cmd_args(int argc, const char **argv)
 {
-	if(argc != 3)
+	if(argc != 2 && argc != 3)
 	{
-		printf("invalid number of args stupid\n");
+		printf("invalid number of args\n");
 		return false;
 	}
 
@@ -79,10 +79,11 @@ bool parse_cmd_args(int argc, const char **argv)
 		//return false;
 	}
 
-	fout = fopen(argv[2], "w");
+	outfilename = (argc==2)? "a.bin" : argv[2];
+	fout = fopen(outfilename, "w");
 	if(!fout)
 	{
-		printf("couldn't open the write file, what gives brah\n");
+		printf("couldn't open output file %s\n", outfilename);
 		return false;
 	}
 
