@@ -43,7 +43,7 @@ begin
                 or_out when operand=OR_OP else
                 --lsl_out when op="xxxxx" else
                 --lsr_out when op="xxxxx" else
-                "00000000" when operand=CMP_OP else
+                "00000000" when operand=CMP_OP or operand=CMPL_OP else
                 --...
                 adder_out when operand=SETM_OP else
                 b when operand=GETPCL_OP else
@@ -62,7 +62,7 @@ begin
     process(a,b,op,clk)
     begin
         if(clk'event and clk='1') then
-            if(operand=CMP_OP) then
+            if(operand=CMP_OP or operand=CMPL_OP) then
                 if(a=b) then
                     flags_int(EF_FLAG) <= '1';
                 else

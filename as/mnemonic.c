@@ -18,6 +18,7 @@ mnem_entry mnemonic_table[] =
 	{"and", format_machine_double_reg},
 	{"or", format_machine_double_reg},
 	{"cmp", format_machine_double_reg},
+	{"cmpl", format_machine_reg_literal},
 
 	{"not", format_machine_single_op},	//i think this still isn't implemented
 

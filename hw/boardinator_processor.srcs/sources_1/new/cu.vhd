@@ -21,6 +21,7 @@ entity cu is
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
+            update_out: out std_logic_vector(1 downto 0);
             lit : out STD_LOGIC_VECTOR (7 downto 0);
             mem_region : out STD_LOGIC_VECTOR(1 downto 0);
             data_en : out STD_LOGIC;
@@ -42,6 +43,7 @@ signal addr_sig: std_logic_vector(9 downto 0);
 signal jmp_condition: std_logic;
 
 signal operand: unsigned(4 downto 0);
+signal update: std_logic_vector(1 downto 0);
 
 begin
     
@@ -68,7 +70,7 @@ begin
                         if(operand < CMP_OP) then  --ALU operation
                             data_en <= '1';
                             pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(operand = CMP_OP) then
+                        elsif(operand = CMP_OP or operand = CMPL_OP) then
                             data_en <= '0';
                             pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(operand <= JOVF_OP) then    --jmp operations
@@ -127,12 +129,13 @@ begin
     op_int <= ir(15 downto 11);
     dst <= ir(10 downto 8);
     src <= ir(2 downto 0);
+    update <= ir(4 downto 3);
     --lit <= ir(7 downto 0);
     lit <=  saved_pc(7 downto 0) when operand = GETPCL_OP else
             "000000" & saved_pc(9 downto 8) when operand = GETPCH_OP else
-            "00000000" when operand = SETM_OP and ir(4 downto 3)="00" else
-            "00000001" when operand = SETM_OP and ir(4 downto 3)="01" else
-            "11111111" when operand = SETM_OP and ir(4 downto 3)="11" else
+            "00000000" when operand = SETM_OP and update="00" else
+            "00000001" when operand = SETM_OP and update="01" else
+            "11111111" when operand = SETM_OP and update="11" else
             ir(7 downto 0);
     mem_region <= ir(7 downto 6);
     
@@ -140,6 +143,7 @@ begin
     
     pc_out <= pc;
     op <= op_int;
+    update_out <= update;
     
     --
     operand <= unsigned(op_int);

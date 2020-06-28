@@ -7,7 +7,7 @@
 
 	;
 	;set 	r2,RSTCAUSE
-	;getmem 	r0,r2,SFR_REGION
+	;getm 	r0,r2,SFR_REGION
 	;set 	r3,0	;POR reset
 	;cmp 	r3,r0
 	;jeq 	main
