@@ -47,8 +47,7 @@
 	set		r3,1
 
 	factorial_loop:
-	set		r4,1
-	cmp		r2,r4
+	cmpl	r2,1
 	jeq		factorial_exit
 
 	;fact *= i
@@ -63,7 +62,6 @@
 	jmp		factorial_loop
 
 	factorial_exit:
-	;subl	sp,0x20		;should underflow the stack
 	mov		r0,r3
 	pop		r3
 	pop		r2

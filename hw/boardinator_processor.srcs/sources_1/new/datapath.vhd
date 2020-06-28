@@ -88,7 +88,8 @@ begin
     process(operand, lit, b_sig)
     begin
         if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
-        operand=GETPCL_OP or operand=GETPCH_OP or operand=SETM_OP) then
+        operand=CMPL_OP or operand=GETPCL_OP or operand=GETPCH_OP or
+        operand=SETM_OP) then
         --if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
         --if(operand=SET_OP or operand=ADDL_OP or op="00101" or op="10011" or op="10100") then
             alu_b_in <= lit;

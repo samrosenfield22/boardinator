@@ -85,8 +85,7 @@
 	getm r2,sp,STACK_REGION,0 ;r5 is bits (arg2)
 	addl sp,5
 
-	set 	r5,8
-	cmp		r2,r5
+	cmpl 	r2,8
 	jlt		lsl16_shift_less_than_half
 
 	lsl16_shift_half:
@@ -147,16 +146,14 @@
 	mult8_loop:
 
 	;if(i > 7) goto exit
-	set 	r3,7
-	cmp 	r2,r3
+	cmpl	r2,7
 	jgt 	mult8_exit
 
 	;if((b & mask) != 0) ...
 	getarg	r1,1	;b
 	getlcl	r3,2	;mask
 	and 	r1,r3
-	set 	r3,0
-	cmp		r1,r3
+	cmpl	r1,0
 	jne		mult8_shift_and_add
 	jmp		mult8_loop_end
 
