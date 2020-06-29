@@ -53,6 +53,21 @@ constant TMRCON:    integer := 2;
 constant TMRCMP:    integer := 3;
 constant TMROUT:    integer := 4;
 
+constant IOBANK_SFRS_START: integer := 64;
+constant MODEA:     integer := IOBANK_SFRS_START+0;
+constant INA:       integer := IOBANK_SFRS_START+1;
+constant OUTA:      integer := IOBANK_SFRS_START+2;
+constant MODEB:     integer := IOBANK_SFRS_START+3;
+constant INB:       integer := IOBANK_SFRS_START+4;
+constant OUTB:      integer := IOBANK_SFRS_START+5;
+constant MODEC:     integer := IOBANK_SFRS_START+6;
+constant INC:       integer := IOBANK_SFRS_START+7;
+constant OUTC:      integer := IOBANK_SFRS_START+8;
+constant MODED:     integer := IOBANK_SFRS_START+9;
+constant IND:       integer := IOBANK_SFRS_START+10;
+constant OUTD:      integer := IOBANK_SFRS_START+11;
+
+
 
 type memarray_t is array (1023 downto 0) of std_logic_vector(7 downto 0);
 

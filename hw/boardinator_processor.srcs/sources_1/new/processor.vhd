@@ -15,7 +15,10 @@ entity processor is
     Port ( temporary_processor_instr_input : in STD_LOGIC_VECTOR(15 downto 0);  --delet
            clk : in STD_LOGIC;
            ext_rst : in STD_LOGIC;
-           pc_out : out STD_LOGIC_VECTOR(9 downto 0));
+           pc_out : out STD_LOGIC_VECTOR(9 downto 0);
+           
+           gpio_pins : inout STD_LOGIC_VECTOR(31 downto 0)
+           );
 end processor;
 
 architecture Behavioral of processor is
@@ -91,6 +94,15 @@ architecture Behavioral of processor is
         clk : in STD_LOGIC;
         tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0);
         tmrout_sfr : out STD_LOGIC_VECTOR (7 downto 0)
+    );
+    end component;
+    
+    component iobank_module
+    Port (
+        mode_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+        write_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+        read_sfr : out STD_LOGIC_VECTOR (7 downto 0);
+        pins : inout STD_LOGIC_VECTOR (7 downto 0)
     );
     end component;
      
@@ -184,6 +196,20 @@ begin
         tmrcmp_sfr => prog_mem_regs(TMRCMP + 512),
         tmrout_sfr => tmrout_sfr
     );
+    
+    port_a: iobank_module port map (
+        mode_sfr => prog_mem_regs(MODEA + 512),
+        write_sfr => prog_mem_regs(OUTA + 512),
+        read_sfr => prog_mem_regs(INA + 512),
+        pins => gpio_pins(7 downto 0)
+    );
+    port_b: iobank_module port map (
+        mode_sfr => prog_mem_regs(MODEB + 512),
+        write_sfr => prog_mem_regs(OUTB + 512),
+        read_sfr => prog_mem_regs(INB + 512),
+        pins => gpio_pins(15 downto 8)
+    );
+    --etc
     
     --stack address selector
     process(stack_we, a_readback, b_readback)

@@ -25,10 +25,16 @@
 	call	factorial
 	subl	sp,1
 
+	set 	r2,MODEA
+	set 	r3,0xFF		;;aaahhhhh
+	setm 	r2,r3,SFR_REGION,0
+	set 	r2,OUTA
+	setm 	r2,r0,SFR_REGION,0
+
 	;set the SWRST bit of RSTCON
 	;set 	r2,RSTCON
 	;set 	r3,SWRST
-	;setmem	r2,r3,SFR_REGION
+	;setm	r2,r3,SFR_REGION
 	;nop
 
 	end:
