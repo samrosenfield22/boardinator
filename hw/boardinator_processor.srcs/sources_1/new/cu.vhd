@@ -21,7 +21,7 @@ entity cu is
             
             op : out STD_LOGIC_VECTOR (4 downto 0);
             dst, src : out STD_LOGIC_VECTOR (2 downto 0);
-            update_out: out std_logic_vector(1 downto 0);
+            --update_out: out std_logic_vector(1 downto 0);
             lit : out STD_LOGIC_VECTOR (7 downto 0);
             mem_region : out STD_LOGIC_VECTOR(1 downto 0);
             data_en : out STD_LOGIC;
@@ -143,7 +143,7 @@ begin
     
     pc_out <= pc;
     op <= op_int;
-    update_out <= update;
+    --update_out <= update;
     
     --
     operand <= unsigned(op_int);

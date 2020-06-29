@@ -13,6 +13,7 @@ tempfile*.asm
 hw/boardinator_processor.cache
 hw/boardinator_processor.sim
 hw/boardinator_processor.xpr
+hw/boardinator_processor.runs
 hw/*.wcfg
 
 *~lock*

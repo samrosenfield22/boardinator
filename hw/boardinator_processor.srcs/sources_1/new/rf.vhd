@@ -59,7 +59,14 @@ begin
     begin
         if(we='1') then
             --clock only the reg selected by the write address
-            dec <= (to_integer(unsigned(w_addr)) => clk, others => '0');
+            --dec <= (to_integer(unsigned(w_addr)) => clk, others => '0');
+            --dec(7) <= clk when unsigned(w_addr)=7; else '0';
+            
+            for i in 0 to 7 loop
+                if(unsigned(w_addr)=i) then dec(i) <= clk;
+                else dec(i) <= '0';
+                end if;
+            end loop;
         else
             dec <= (others => '0');
         end if;

@@ -99,7 +99,7 @@ begin
     end process;
     
     --register file input mux (selects between ALU Y and stack output
-    process(op, y_sig, stack_data_out)
+    process(operand, y_sig, stack_data_out)
     begin
         --if(operand=SETM_OP or operand=GETM_OP) then
         if(operand=GETM_OP) then
@@ -120,7 +120,8 @@ begin
 --    end process;
     
     --
-    process(flags_sig)
+    process(flags_sig, dst, operand)
+    --process(flags_sig)
     begin
         if((flags_sig(OF_FLAG)='1') and 
         (dst="110" or dst="111") and
