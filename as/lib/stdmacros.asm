@@ -34,9 +34,11 @@
 
 .define "RSTCAUSE"	"1"
 
-.define	"TMRCON" "2"
-.define "TMRCMP" "3"
-.define "TMROUT" "4"
+.define	"TMRCON"	"2"
+.define "TMRON"		"0x80"
+
+.define "TMRCMP"	"3"
+.define "TMROUT"	"4"
 
 .define "MODEA" "0x40"
 .define "INA" 	"0x41"

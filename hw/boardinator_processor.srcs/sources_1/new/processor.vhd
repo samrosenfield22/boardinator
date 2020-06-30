@@ -12,17 +12,23 @@ use work.opcodes.all;
 
 
 entity processor is
-    Port ( temporary_processor_instr_input : in STD_LOGIC_VECTOR(15 downto 0);  --delet
+    Port ( --temporary_processor_instr_input : in STD_LOGIC_VECTOR(15 downto 0);  --delet
            clk : in STD_LOGIC;
            ext_rst : in STD_LOGIC;
-           pc_out : out STD_LOGIC_VECTOR(9 downto 0);
+           --pc_out : out STD_LOGIC_VECTOR(9 downto 0);
            
            gpio_pins : inout STD_LOGIC_VECTOR(31 downto 0)
            );
 end processor;
 
 architecture Behavioral of processor is
-
+    
+    component instruction_mem
+    Port ( clk : in STD_LOGIC;
+           pc : in STD_LOGIC_VECTOR (9 downto 0);
+           instr : out STD_LOGIC_VECTOR (15 downto 0));
+    end component;
+    
     component datapath
     Port ( op : in STD_LOGIC_VECTOR (4 downto 0);
            dst, src: in STD_LOGIC_VECTOR (2 downto 0);
@@ -125,8 +131,18 @@ architecture Behavioral of processor is
      signal ilgl_op: std_logic;
      
      signal rstcause_sfr, tmrout_sfr: std_logic_vector(7 downto 0);
+     
+     signal temporary_processor_instr: std_logic_vector(15 downto 0);
+     signal pc: std_logic_vector(9 downto 0);
 
 begin
+    
+    mock_program_memory: instruction_mem port map (
+        clk => clk,
+        instr => temporary_processor_instr,
+        pc => pc
+    );
+    
     data_path: datapath port map (
         op => op,
         dst => dst,
@@ -146,7 +162,7 @@ begin
     );
     
     control: cu port map (
-        instr_in => temporary_processor_instr_input,
+        instr_in => temporary_processor_instr,
         rst => rst,
         clk => clk,
         flags => flags,
@@ -158,7 +174,7 @@ begin
         lit => lit,
         mem_region => region,
         data_en => data_en,
-        pc_out => pc_out,
+        pc_out => pc,
         ilgl_op => ilgl_op,
         stack_we => stack_we
         --stack_addr => stack_addr
