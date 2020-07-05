@@ -137,7 +137,8 @@ begin
             "00000001" when operand = SETM_OP and update="01" else
             "11111111" when operand = SETM_OP and update="11" else
             ir(7 downto 0);
-    mem_region <= ir(7 downto 6);
+    mem_region <= ir(7 downto 6) when (operand=SETM_OP or operand=GETM_OP) else
+    "00";
     
     addr_sig <= ir(9 downto 0);
     

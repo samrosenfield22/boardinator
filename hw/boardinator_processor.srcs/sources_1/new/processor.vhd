@@ -77,7 +77,7 @@ architecture Behavioral of processor is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr, tmrout_sfr : in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr: in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
@@ -131,7 +131,7 @@ architecture Behavioral of processor is
      signal ilgl_op: std_logic;
      
      signal rstcause_sfr, tmrout_sfr: std_logic_vector(7 downto 0);
-     
+     signal ina_sfr, inb_sfr: std_logic_vector(7 downto 0);
      signal temporary_processor_instr: std_logic_vector(15 downto 0);
      signal pc: std_logic_vector(9 downto 0);
 
@@ -190,6 +190,8 @@ begin
         
         rstcause_sfr => rstcause_sfr,
         tmrout_sfr => tmrout_sfr,
+        ina_sfr => ina_sfr,
+        inb_sfr => inb_sfr,
         
         out_data => stack_data_out,
         prog_mem_out => prog_mem_regs
@@ -200,7 +202,7 @@ begin
         stkovf_rst => stkovflw,
         ilglop_rst => ilgl_op,
         clk => clk,
-        rstcon_sfr => prog_mem_regs(RSTCON + 512),
+        rstcon_sfr => prog_mem_regs(RSTCON + SFR_REGION_ADDR),
         rstcause_sfr => rstcause_sfr,
         global_rst => rst
     );
@@ -208,21 +210,21 @@ begin
     timer_mod: timer_module port map (
         rst => rst,
         clk => clk,
-        tmrcon_sfr => prog_mem_regs(TMRCON + 512),
-        tmrcmp_sfr => prog_mem_regs(TMRCMP + 512),
+        tmrcon_sfr => prog_mem_regs(TMRCON + SFR_REGION_ADDR),
+        tmrcmp_sfr => prog_mem_regs(TMRCMP + SFR_REGION_ADDR),
         tmrout_sfr => tmrout_sfr
     );
     
     port_a: iobank_module port map (
-        mode_sfr => prog_mem_regs(MODEA + 512),
-        write_sfr => prog_mem_regs(OUTA + 512),
-        read_sfr => prog_mem_regs(INA + 512),
+        mode_sfr => prog_mem_regs(MODEA + SFR_REGION_ADDR),
+        write_sfr => prog_mem_regs(OUTA + SFR_REGION_ADDR),
+        read_sfr => ina_sfr,
         pins => gpio_pins(7 downto 0)
     );
     port_b: iobank_module port map (
-        mode_sfr => prog_mem_regs(MODEB + 512),
-        write_sfr => prog_mem_regs(OUTB + 512),
-        read_sfr => prog_mem_regs(INB + 512),
+        mode_sfr => prog_mem_regs(MODEB + SFR_REGION_ADDR),
+        write_sfr => prog_mem_regs(OUTB + SFR_REGION_ADDR),
+        read_sfr => inb_sfr,
         pins => gpio_pins(15 downto 8)
     );
     --etc

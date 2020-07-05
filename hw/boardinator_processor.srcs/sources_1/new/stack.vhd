@@ -15,7 +15,7 @@ entity prog_mem is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr, tmrout_sfr: in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr: in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
@@ -27,8 +27,8 @@ architecture Behavioral of prog_mem is
 signal prog_mem: memarray_t := (others => "00000000");
 
 signal full_addr: std_logic_vector(9 downto 0);
-signal full_addr_num: integer range 0 to 1023;
-signal addr_sfr: integer range 0 to (1023 + 512);
+signal full_addr_num: integer range 0 to 512;
+--signal addr_sfr: integer range 0 to (1023 + 512);
 
 begin
 
@@ -37,12 +37,13 @@ begin
         if(rst='0') then
             prog_mem <= (others => "00000000");
         elsif(clk'event and clk='1') then
-            --prog_mem(to_integer(unsigned(addr))) <= in_data;
-            --prog_mem(to_integer(unsigned(full_addr))) <= in_data;
             if(we='1') then
-                if( addr_sfr /= RSTCAUSE and
-                    --addr_sfr /= RSTCAUSE and
-                    addr_sfr /= TMROUT) then
+                if( full_addr_num /= RSTCAUSE and
+                    full_addr_num /= TMROUT and
+                    full_addr_num /= INA and
+                    full_addr_num /= INB
+                    --full_addr_num /= INA and
+                    ) then
                     prog_mem(full_addr_num) <= in_data;
                 end if;
             
@@ -50,8 +51,10 @@ begin
             end if;
             
             --set SFRs that are written to by peripherals
-            prog_mem(RSTCAUSE+512) <= rstcause_sfr;
-            prog_mem(TMROUT+512) <= tmrout_sfr;
+            prog_mem(RSTCAUSE + SFR_REGION_ADDR) <= rstcause_sfr;
+            prog_mem(TMROUT + SFR_REGION_ADDR) <= tmrout_sfr;
+            prog_mem(INA + SFR_REGION_ADDR) <= ina_sfr;
+            prog_mem(INB + SFR_REGION_ADDR) <= inb_sfr;
         end if;
     end process;
     
@@ -60,7 +63,7 @@ begin
     
     full_addr <= region & addr;
     full_addr_num <= to_integer(unsigned(full_addr));
-    addr_sfr <= full_addr_num + 512;
+    --addr_sfr <= full_addr_num + SFR_REGION_ADDR;
     
     out_data <= prog_mem(to_integer(unsigned(full_addr)));
     prog_mem_out <= prog_mem;

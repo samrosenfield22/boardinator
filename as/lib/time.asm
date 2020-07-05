@@ -1,5 +1,5 @@
 ;
-;
+; time.asm
 ;
 
 .include "stdmacros.asm"

@@ -24,8 +24,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;; memory regions ;;;;;;;;;;;;;;;;;;;;;;;
 .define "STACK_REGION" "0"
-;bss?
-.define "SFR_REGION" "2"
+.define "SFR_REGION" "1"
 
 ;;;;;;;;;;;;;;;;;;;;;;; SFR definitions
 
@@ -40,17 +39,17 @@
 .define "TMRCMP"	"3"
 .define "TMROUT"	"4"
 
-.define "MODEA" "0x40"
-.define "INA" 	"0x41"
-.define "OUTA" 	"0x42"
-.define "MODEB" "0x43"
-.define "INB" 	"0x44"
-.define "OUTB" 	"0x45"
-.define "MODEC" "0x46"
-.define "INC" 	"0x47"
-.define "OUTC" 	"0x48"
-.define "MODED" "0x49"
-.define "IND" 	"0x4A"
-.define "OUTD" 	"0x4B"
+.define "MODEA" "0x20"
+.define "INA" 	"0x21"
+.define "OUTA" 	"0x22"
+.define "MODEB" "0x23"
+.define "INB" 	"0x24"
+.define "OUTB" 	"0x25"
+.define "MODEC" "0x26"
+.define "INC" 	"0x27"
+.define "OUTC" 	"0x28"
+.define "MODED" "0x29"
+.define "IND" 	"0x2A"
+.define "OUTD" 	"0x2B"
 
 
