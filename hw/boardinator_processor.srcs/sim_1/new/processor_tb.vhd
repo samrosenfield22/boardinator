@@ -18,11 +18,11 @@ end processor_tb;
 architecture Behavioral of processor_tb is
     component processor
     Port ( --temporary_processor_instr_input : in STD_LOGIC_VECTOR(15 downto 0);  --delet
-           clk : in STD_LOGIC;
+           clk_in : in STD_LOGIC;
            ext_rst : in STD_LOGIC;
            --pc_out : out STD_LOGIC_VECTOR (9 downto 0);
            
-           gpio_pins : inout STD_LOGIC_VECTOR(31 downto 0)
+           gpio_pins : inout STD_LOGIC_VECTOR(7 downto 0)
            );
     end component;
     
@@ -30,7 +30,7 @@ architecture Behavioral of processor_tb is
     signal clk : std_logic := '0';
     signal ext_rst: std_logic := '1';
     --signal pc: std_logic_vector(9 downto 0) := "0000000000";
-    signal gpio_pins : std_logic_vector(31 downto 0);
+    signal gpio_pins : std_logic_vector(7 downto 0);
     
 --    type prog_mem_t is array (999 downto 0) of std_logic_vector(15 downto 0);
 --    signal prog_rom: prog_mem_t :=
@@ -44,7 +44,7 @@ begin
     
     uut: processor port map (
         --temporary_processor_instr_input => instr_input,
-        clk => clk,
+        clk_in => clk,
         ext_rst => ext_rst,
         --pc_out => pc,
         gpio_pins => gpio_pins
@@ -62,17 +62,14 @@ begin
         wait for 10 ns;
     end process;
     
---    main_proc: process
---    begin
---        --ext_rst <= '0';
---        --wait for 360ns;
---        --ext_rst <= '1';
---        --wait for 20ns;
+    main_proc: process
+    begin
+        ext_rst <= '0';
+        wait for 50ns;
+        ext_rst <= '1';
 
---        --let the program execute        
---        wait for 1000*1000ms;
-        
-
---    end process;
+        --let the program execute        
+        wait for 1000*1000ms;
+    end process;
 
 end Behavioral;

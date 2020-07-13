@@ -27,6 +27,7 @@ entity datapath is
            
            a_readback : out STD_LOGIC_VECTOR(7 downto 0);
            b_readback : out STD_LOGIC_VECTOR(7 downto 0);
+			  reg0_out: out STD_LOGIC_VECTOR (7 downto 0);
            
            stkovflw : out STD_LOGIC);
 end datapath;
@@ -44,7 +45,8 @@ architecture Behavioral of datapath is
            
            in_word : in STD_LOGIC_VECTOR (7 downto 0);
            out_a : out STD_LOGIC_VECTOR (7 downto 0);
-           out_b : out STD_LOGIC_VECTOR (7 downto 0));
+           out_b : out STD_LOGIC_VECTOR (7 downto 0);
+			  reg0_out: out STD_LOGIC_VECTOR (7 downto 0));
      end component;
      
      component alu
@@ -70,7 +72,8 @@ begin
         w_addr => dst,
         in_word => rf_in,
         out_a => a_sig,
-        out_b => b_sig
+        out_b => b_sig,
+		  reg0_out => reg0_out
     );
     
     arithlogic: alu port map (

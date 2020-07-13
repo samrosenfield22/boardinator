@@ -33,11 +33,11 @@ end cu;
 
 architecture Behavioral of cu is
 
-type cu_state_t is (fetch, execute);
+type cu_state_t is (fetch, decode, setup, execute, load);
 signal cu_state: cu_state_t := fetch;
 
 signal ir: std_logic_vector(15 downto 0);
-signal pc, saved_pc: std_logic_vector(9 downto 0);
+signal pc, next_pc, saved_pc: std_logic_vector(9 downto 0);
 signal op_int: std_logic_vector(4 downto 0);
 signal addr_sig: std_logic_vector(9 downto 0);
 signal jmp_condition: std_logic;
@@ -64,40 +64,42 @@ begin
                         ir <= instr_in;
                         data_en <= '0';
                         stack_we <= '0';
-                        cu_state <= execute;
-                   
-                    when execute =>
+                        cu_state <= decode;
+                    when decode =>
+                        --
+                        cu_state <= setup;
+                    when setup =>
                         if(operand < CMP_OP) then  --ALU operation
                             data_en <= '1';
-                            pc <= std_logic_vector(unsigned(pc) + 1);
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(operand = CMP_OP or operand = CMPL_OP) then
                             data_en <= '0';
-                            pc <= std_logic_vector(unsigned(pc) + 1);
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(operand <= JOVF_OP) then    --jmp operations
                             data_en <= '0';
                             
                             if(operand = JMP_OP) then --jmp
-                                pc <= addr_sig;
+                                next_pc <= addr_sig;
                             elsif(operand = JEQ_OP) then  --jeq
-                                if(flags(EF_FLAG)='1') then pc <= addr_sig;
-                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                                if(flags(EF_FLAG)='1') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(operand = JNE_OP) then  --jne
-                                if(flags(EF_FLAG)='0') then pc <= addr_sig;
-                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                                if(flags(EF_FLAG)='0') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(operand = JGT_OP) then  --jgt
-                                if(flags(GLF_FLAG)='1' and flags(EF_FLAG)='0') then pc <= addr_sig;
-                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                                if(flags(GLF_FLAG)='1' and flags(EF_FLAG)='0') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(operand = JLT_OP) then  --jlt
-                                if(flags(GLF_FLAG)='0' and flags(EF_FLAG)='0') then pc <= addr_sig;
-                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                                if(flags(GLF_FLAG)='0' and flags(EF_FLAG)='0') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             elsif(operand = JOVF_OP) then  --jovf
-                                if(flags(OF_FLAG)='1') then pc <= addr_sig;
-                                else pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                                if(flags(OF_FLAG)='1') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
 
                         elsif((operand = SETM_OP) or (operand = GETM_OP)) then
                             
-                            pc <= std_logic_vector(unsigned(pc) + 1);
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                             if(operand = SETM_OP) then
                                 stack_we <= '1';
                                 data_en <= '1';     --
@@ -108,15 +110,22 @@ begin
                         elsif((operand = GETPCL_OP) or (operand = GETPCH_OP)) then
                             data_en <= '1';
                             saved_pc <= pc;
-                            pc <= std_logic_vector(unsigned(pc) + 1);
+                            next_pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(operand = SETPC_OP) then
                             data_en <= '0';
-                            pc <= a_readback(1 downto 0) & b_readback;
+                            next_pc <= a_readback(1 downto 0) & b_readback;
                         else
                             ilgl_op <= '0';
                         
                         end if;
                         
+                        cu_state <= execute;
+                    when execute =>
+                        data_en <= '0';
+                        stack_we <= '0';
+                        cu_state <= load;
+                    when load =>
+                        pc <= next_pc;  --happens after data_en goes low
                         cu_state <= fetch;
                     when others =>
                         --ruh roh

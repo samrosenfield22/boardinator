@@ -26,9 +26,9 @@ architecture Behavioral of prog_mem is
 --type memarray_t is array (1023 downto 0) of std_logic_vector(7 downto 0);
 signal prog_mem: memarray_t := (others => "00000000");
 
-signal full_addr: std_logic_vector(9 downto 0);
-signal full_addr_num: integer range 0 to 512;
---signal addr_sfr: integer range 0 to (1023 + 512);
+--signal full_addr: std_logic_vector(9 downto 0);
+--signal full_addr_num: integer range 0 to PROC_MEMORY_END;
+signal addr_intgr, full_addr: integer range 0 to PROC_MEMORY_END;
 
 begin
 
@@ -38,13 +38,13 @@ begin
             prog_mem <= (others => "00000000");
         elsif(clk'event and clk='1') then
             if(we='1') then
-                if( full_addr_num /= RSTCAUSE and
-                    full_addr_num /= TMROUT and
-                    full_addr_num /= INA and
-                    full_addr_num /= INB
+                if( full_addr /= RSTCAUSE and
+                    full_addr /= TMROUT and
+                    full_addr /= INA and
+                    full_addr /= INB
                     --full_addr_num /= INA and
                     ) then
-                    prog_mem(full_addr_num) <= in_data;
+                    prog_mem(full_addr) <= in_data;
                 end if;
             
                 
@@ -59,13 +59,18 @@ begin
     end process;
     
     
+    addr_intgr <= to_integer(unsigned(addr));
     
+    --full_addr <= region & addr;
+    full_addr <= addr_intgr when (unsigned(region)=STACK_REGION) else
+    addr_intgr + SFR_REGION_ADDR;
     
-    full_addr <= region & addr;
-    full_addr_num <= to_integer(unsigned(full_addr));
+    --full_addr_num <= to_integer(unsigned(full_addr));
     --addr_sfr <= full_addr_num + SFR_REGION_ADDR;
     
-    out_data <= prog_mem(to_integer(unsigned(full_addr)));
+    --out_data <= prog_mem(to_integer(unsigned(full_addr)));
+    out_data <= prog_mem(full_addr) when full_addr<=PROC_MEMORY_END else
+    (others => '0');
     prog_mem_out <= prog_mem;
     
 end Behavioral;

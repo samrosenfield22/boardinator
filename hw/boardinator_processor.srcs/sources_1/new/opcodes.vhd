@@ -36,17 +36,22 @@ constant GETPCH_OP: opcode := 23;
 constant SETPC_OP:  opcode := 24;
 --constant _OP:    opcode := 2
 
---memory regions
-constant STACK_REGION:  integer := 0;
-constant SFR_REGION:    integer := 1;
-
-constant STACK_REGION_ADDR: integer := 0;
-constant SFR_REGION_ADDR: integer := 256;
-
 --flag bits
 constant EF_FLAG:   integer := 0;
 constant GLF_FLAG:  integer := 1;
 constant OF_FLAG:   integer := 2;
+
+--memory region ids
+constant STACK_REGION:  integer := 0;
+constant SFR_REGION:    integer := 1;
+
+--
+constant STACK_REGION_SIZE: integer := 256;
+constant SFR_REGION_SIZE:   integer := 64;
+
+constant STACK_REGION_ADDR: integer := 0;
+constant SFR_REGION_ADDR:   integer := STACK_REGION_ADDR + STACK_REGION_SIZE;
+constant PROC_MEMORY_END:   integer := SFR_REGION_ADDR + SFR_REGION_SIZE;
 
 --SFRs
 constant RSTCON:    integer := 0;
@@ -71,7 +76,7 @@ constant OUTD:      integer := IOBANK_SFRS_START+11;
 
 
 
-type memarray_t is array (511 downto 0) of std_logic_vector(7 downto 0);
+type memarray_t is array (PROC_MEMORY_END downto 0) of std_logic_vector(7 downto 0);
 
 
 end opcodes;

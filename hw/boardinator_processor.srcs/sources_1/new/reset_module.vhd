@@ -45,7 +45,8 @@ begin
         end if;
     end process;
     
-    process(clk, por_rst)
+    --process(clk, por_rst)
+    process(clk)
     begin
         if(clk'event and clk='1') then
             if(por_rst = '0') then

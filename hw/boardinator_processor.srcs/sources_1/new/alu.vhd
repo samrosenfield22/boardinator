@@ -60,7 +60,8 @@ begin
     or_out <= a OR b;
     
     --flags
-    process(a,b,op,clk)
+    --process(a,b,op,clk)
+    process(clk)
     begin
         if(clk'event and clk='1') then
             if(operand=CMP_OP or operand=CMPL_OP) then
