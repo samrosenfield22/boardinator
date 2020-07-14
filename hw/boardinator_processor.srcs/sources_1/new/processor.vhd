@@ -120,7 +120,7 @@ architecture Behavioral of processor is
     );
     end component;
      
-     signal clk, rst: std_logic;
+     signal clk, rst: std_logic := '1';
      
      signal op: std_logic_vector(4 downto 0);
      signal dst, src : STD_LOGIC_VECTOR (2 downto 0);

@@ -59,7 +59,8 @@ begin
     
     --if we're in one-shot mode (1) and the match already occurred, or if the timer is off, disable the counter
     tmr_mode <= tmrcon_sfr(TMRMODE_BIT);
-    tmr_cnt_en <= (tmr_mode and tmr_match) or not(tmr_on);
+    --tmr_cnt_en <= (tmr_mode and tmr_match) or not(tmr_on);
+    --tmr_cnt_en <= tmr_match or not(tmr_on);
     
     --if we're using one-shot mode, we need a functionality where turning the timer off resets the counter
     --this should probably go in the process below, though (so we don't get multiple drivers)
@@ -70,17 +71,37 @@ begin
 --        end if;
 --    end process;
     
-    process(rst, scaled_clk, tmr_cnt_en)
+--    process(rst, scaled_clk, tmr_cnt_en)
+--    begin
+--        if((rst='0') or (tmr_cnt_en='1')) then
+--            tmr_cnt <= (others => '0');
+--        else
+--            if(tmr_cnt_en = '0') then
+--                if(scaled_clk'event and scaled_clk='1') then
+--                    tmr_cnt <= std_logic_vector(unsigned(tmr_cnt)+1);
+--                end if;
+--            end if;
+--        end if;
+--    end process;
+    
+    process(rst, scaled_clk)
+    variable tmr_cnt_v: std_logic_vector(7 downto 0) := (others => '0');
     begin
-        if(rst='0' or tmr_cnt_en='1') then
-            tmr_cnt <= (others => '0');
+        if((rst='0') or (tmr_on='0')) then
+            tmr_cnt_v := (others => '0');
         else
-            if(tmr_cnt_en = '0') then
+            --if(tmr_cnt_en = '0') then
                 if(scaled_clk'event and scaled_clk='1') then
-                    tmr_cnt <= std_logic_vector(unsigned(tmr_cnt)+1);
+                    if(tmr_match='1') then
+                        tmr_cnt_v := (others => '0');
+                    else
+                        tmr_cnt_v := std_logic_vector(unsigned(tmr_cnt_v)+1);
+                    end if;
                 end if;
-            end if;
+            --end if;
         end if;
+        
+        tmr_cnt <= tmr_cnt_v;
     end process;
     
     
