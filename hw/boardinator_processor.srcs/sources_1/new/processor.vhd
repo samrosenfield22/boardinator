@@ -200,12 +200,13 @@ begin
         flags => flags,
         a_readback => a_readback,
         b_readback => b_readback,
-		  reg0_out => test_out_int,
-		  --reg0_out => open,
+		  --reg0_out => test_out_int,
+		  --reg0_out => gpio_pins,
+		  reg0_out => open,
         stkovflw => stkovflw
     );
 	 --test_out_int <= "01010101";
-	 gpio_pins <= test_out_int;
+	 --gpio_pins <= test_out_int;
     
     control: cu port map (
         instr_in => temporary_processor_instr,
@@ -269,8 +270,8 @@ begin
         write_sfr => prog_mem_regs(OUTA + SFR_REGION_ADDR),
         read_sfr => ina_sfr,
         --pins => gpio_pins(7 downto 0)
-        --pins => gpio_pins
-		  pins => open
+        pins => gpio_pins
+		  --pins => open
     );
     port_b: iobank_module port map (
         mode_sfr => prog_mem_regs(MODEB + SFR_REGION_ADDR),
