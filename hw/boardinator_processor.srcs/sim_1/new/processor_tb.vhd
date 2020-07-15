@@ -22,7 +22,7 @@ architecture Behavioral of processor_tb is
            ext_rst : in STD_LOGIC;
            --pc_out : out STD_LOGIC_VECTOR (9 downto 0);
            
-           gpio_pins : inout STD_LOGIC_VECTOR(7 downto 0)
+           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0)
            );
     end component;
     
@@ -30,7 +30,7 @@ architecture Behavioral of processor_tb is
     signal clk : std_logic := '0';
     signal ext_rst: std_logic := '1';
     --signal pc: std_logic_vector(9 downto 0) := "0000000000";
-    signal gpio_pins : std_logic_vector(7 downto 0);
+    signal gpio_pins : std_logic_vector(15 downto 0);
     
 --    type prog_mem_t is array (999 downto 0) of std_logic_vector(15 downto 0);
 --    signal prog_rom: prog_mem_t :=

@@ -69,7 +69,7 @@ begin
                         --
                         cu_state <= setup;
                     when setup =>
-                        if(operand < CMP_OP) then  --ALU operation
+                        if(operand < CMP_OP or operand = NOT_OP) then  --ALU operation
                             data_en <= '1';
                             next_pc <= std_logic_vector(unsigned(pc) + 1);
                         elsif(operand = CMP_OP or operand = CMPL_OP) then
