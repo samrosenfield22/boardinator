@@ -19,7 +19,7 @@ entity processor is
            
 			  --test_out : out STD_LOGIC_VECTOR(7 downto 0);
 			  
-           gpio_pins : inout STD_LOGIC_VECTOR(7 downto 0)
+           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0)
 			  
            );
 end processor;
@@ -269,16 +269,16 @@ begin
         mode_sfr => prog_mem_regs(MODEA + SFR_REGION_ADDR),
         write_sfr => prog_mem_regs(OUTA + SFR_REGION_ADDR),
         read_sfr => ina_sfr,
-        --pins => gpio_pins(7 downto 0)
-        pins => gpio_pins
+        pins => gpio_pins(7 downto 0)
+        --pins => gpio_pins
 		  --pins => open
     );
     port_b: iobank_module port map (
         mode_sfr => prog_mem_regs(MODEB + SFR_REGION_ADDR),
         write_sfr => prog_mem_regs(OUTB + SFR_REGION_ADDR),
         read_sfr => inb_sfr,
-        --pins => gpio_pins(15 downto 8)
-        pins => open
+        pins => gpio_pins(15 downto 8)
+        --pins => open
     );
     --etc
     

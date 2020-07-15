@@ -8,14 +8,25 @@ NET "ext_rst" LOC = P38 | IOSTANDARD = LVTTL;
 
 #NET "cclk" LOC = P70 | IOSTANDARD = LVTTL;
 
-NET "gpio_pins<0>" LOC = P134 | IOSTANDARD = LVTTL;
-NET "gpio_pins<1>" LOC = P133 | IOSTANDARD = LVTTL;
-NET "gpio_pins<2>" LOC = P132 | IOSTANDARD = LVTTL;
-NET "gpio_pins<3>" LOC = P131 | IOSTANDARD = LVTTL;
-NET "gpio_pins<4>" LOC = P127 | IOSTANDARD = LVTTL;
-NET "gpio_pins<5>" LOC = P126 | IOSTANDARD = LVTTL;
-NET "gpio_pins<6>" LOC = P124 | IOSTANDARD = LVTTL;
-NET "gpio_pins<7>" LOC = P123 | IOSTANDARD = LVTTL;
+NET "gpio_pins<0>"  LOC = P134 | IOSTANDARD = LVTTL;
+NET "gpio_pins<1>"  LOC = P133 | IOSTANDARD = LVTTL;
+NET "gpio_pins<2>"  LOC = P132 | IOSTANDARD = LVTTL;
+NET "gpio_pins<3>"  LOC = P131 | IOSTANDARD = LVTTL;
+NET "gpio_pins<4>"  LOC = P127 | IOSTANDARD = LVTTL;
+NET "gpio_pins<5>"  LOC = P126 | IOSTANDARD = LVTTL;
+NET "gpio_pins<6>"  LOC = P124 | IOSTANDARD = LVTTL;
+NET "gpio_pins<7>"  LOC = P123 | IOSTANDARD = LVTTL;
+
+NET "gpio_pins<8>"  LOC = P120 | IOSTANDARD = LVTTL;
+NET "gpio_pins<9>"  LOC = P118 | IOSTANDARD = LVTTL;
+NET "gpio_pins<10>" LOC = P116 | IOSTANDARD = LVTTL;
+#NET "gpio_pins<11>" LOC = P | IOSTANDARD = LVTTL;
+#NET "gpio_pins<12>" LOC = P | IOSTANDARD = LVTTL;
+#NET "gpio_pins<13>" LOC = P | IOSTANDARD = LVTTL;
+#NET "gpio_pins<14>" LOC = P | IOSTANDARD = LVTTL;
+#NET "gpio_pins<15>" LOC = P | IOSTANDARD = LVTTL;
+
+#NET "gpio_pins<>" LOC = P | IOSTANDARD = LVTTL;
 
 #NET "spi_mosi" LOC = P44 | IOSTANDARD = LVTTL;
 #NET "spi_miso" LOC = P45 | IOSTANDARD = LVTTL;
