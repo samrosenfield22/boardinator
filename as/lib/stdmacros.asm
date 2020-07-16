@@ -20,6 +20,11 @@
 .define "call func" "getpcl r5\n getpch r4\n  addl r5,9\n jovf inc_upper\n  jmp pushret\n inc_upper:\n addl r4,1\n pushret:\n push r4\n push r5\n jmp func"
 .define "ret" "pop r5\n pop r4\n setpc r4,r5"
 
+;;;;;;;;;;;;;;;;;;;;;;;
+
+.define "sfr_write sfr,byte" "set r4,sfr\n set r5,byte\n setm r4,r5,SFR_REGION,0"
+.define "sfr_read reg,sfr" "set r4,sfr\n getm reg,r4,SFR_REGION,0"
+
 .define "nop" "addl r0,0"
 
 ;;;;;;;;;;;;;;;;;;;;;;; memory regions ;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,6 +43,9 @@
 
 .define "TMRCMP"	"3"
 .define "TMROUT"	"4"
+.define "TXCON"		"8"
+.define "TXREG"		"9"
+.define "TXSTAT"	"10"
 
 .define "MODEA" "0x20"
 .define "INA" 	"0x21"

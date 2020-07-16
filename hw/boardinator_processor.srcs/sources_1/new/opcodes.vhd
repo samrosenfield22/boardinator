@@ -59,6 +59,10 @@ constant RSTCAUSE:  integer := 1;
 constant TMRCON:    integer := 2;
 constant TMRCMP:    integer := 3;
 constant TMROUT:    integer := 4;
+--2nd timer (5-7)
+constant TXCON:     integer := 8;
+constant TXREG:     integer := 9;
+constant TXSTAT:    integer := 10;
 
 constant IOBANK_SFRS_START: integer := 32;
 constant MODEA:     integer := IOBANK_SFRS_START+0;

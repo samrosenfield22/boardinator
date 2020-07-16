@@ -19,7 +19,9 @@ entity processor is
            
 			  --test_out : out STD_LOGIC_VECTOR(7 downto 0);
 			  
-           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0)
+           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0);
+           tx_pin : out STD_LOGIC;
+           rx_pin : in STD_LOGIC
 			  
            );
 end processor;
@@ -85,7 +87,7 @@ architecture Behavioral of processor is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr: in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr, txstat_sfr: in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
            prog_mem_out : out memarray_t);
@@ -119,6 +121,16 @@ architecture Behavioral of processor is
         pins : inout STD_LOGIC_VECTOR (7 downto 0)
     );
     end component;
+    
+    component uart
+    port (
+      rst, clk:               in std_logic;
+      txcon_reg, tx_byte_reg: in std_logic_vector(7 downto 0);
+      txstat_reg:             out std_logic_vector(7 downto 0);
+      txpin : out STD_LOGIC;
+      rxpin : in STD_LOGIC
+    );
+    end component;
      
      signal clk, rst: std_logic := '1';
      
@@ -138,8 +150,11 @@ architecture Behavioral of processor is
      signal prog_mem_regs: memarray_t;
      signal ilgl_op: std_logic;
      
+     --SFRs that get written to by peripherals
      signal rstcause_sfr, tmrout_sfr: std_logic_vector(7 downto 0);
      signal ina_sfr, inb_sfr: std_logic_vector(7 downto 0);
+     signal txstat_sfr: std_logic_vector(7 downto 0);
+     
      signal temporary_processor_instr: std_logic_vector(15 downto 0);
      signal pc: std_logic_vector(9 downto 0);
      
@@ -239,6 +254,7 @@ begin
         tmrout_sfr => tmrout_sfr,
         ina_sfr => ina_sfr,
         inb_sfr => inb_sfr,
+        txstat_sfr => txstat_sfr,
         
         out_data => stack_data_out,
         prog_mem_out => prog_mem_regs
@@ -280,7 +296,16 @@ begin
         pins => gpio_pins(15 downto 8)
         --pins => open
     );
-    --etc
+    
+    uart_mod: uart port map (
+        rst => rst,
+        clk => clk,
+        txcon_reg => prog_mem_regs(TXCON + SFR_REGION_ADDR),
+        tx_byte_reg => prog_mem_regs(TXREG + SFR_REGION_ADDR),
+        txstat_reg => txstat_sfr,
+        txpin => tx_pin,
+        rxpin => rx_pin
+    );
     
     --stack address selector
     process(operand, stack_we, a_readback, b_readback)

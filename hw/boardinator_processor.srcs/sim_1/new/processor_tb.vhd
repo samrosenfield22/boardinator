@@ -22,7 +22,10 @@ architecture Behavioral of processor_tb is
            ext_rst : in STD_LOGIC;
            --pc_out : out STD_LOGIC_VECTOR (9 downto 0);
            
-           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0)
+           gpio_pins : inout STD_LOGIC_VECTOR(15 downto 0);
+           
+           tx_pin : out STD_LOGIC;
+           rx_pin : in STD_LOGIC
            );
     end component;
     
@@ -31,6 +34,7 @@ architecture Behavioral of processor_tb is
     signal ext_rst: std_logic := '1';
     --signal pc: std_logic_vector(9 downto 0) := "0000000000";
     signal gpio_pins : std_logic_vector(15 downto 0);
+    signal tx, rx: std_logic;
     
 --    type prog_mem_t is array (999 downto 0) of std_logic_vector(15 downto 0);
 --    signal prog_rom: prog_mem_t :=
@@ -47,7 +51,9 @@ begin
         clk_in => clk,
         ext_rst => ext_rst,
         --pc_out => pc,
-        gpio_pins => gpio_pins
+        gpio_pins => gpio_pins,
+        tx_pin => tx,
+        rx_pin => rx
     );
     
     
@@ -70,6 +76,21 @@ begin
 
         --let the program execute        
         wait for 1000*1000ms;
+    end process;
+    
+    switch_test: process
+    begin
+        gpio_pins(10 downto 8) <= "000";
+        wait for 1ms;
+        gpio_pins(10 downto 8) <= "001";
+        wait for 1ms;
+        gpio_pins(10 downto 8) <= "010";
+        wait for 1ms;
+        gpio_pins(10 downto 8) <= "100";
+        wait for 1ms;
+        gpio_pins(10 downto 8) <= "110";
+        wait for 1ms;
+        
     end process;
 
 end Behavioral;
