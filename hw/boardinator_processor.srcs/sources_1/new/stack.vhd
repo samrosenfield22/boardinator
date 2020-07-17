@@ -15,11 +15,15 @@ entity prog_mem is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr, txstat_sfr:
+           rstcause_sfr, tmrout_sfr, tmrstat_sfr, ina_sfr, inb_sfr,
+           uartstat_sfr, rx_byte_sfr:
             in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
-           prog_mem_out : out memarray_t);
+           prog_mem_out : out memarray_t;
+           
+           rxreg_read_sig : out STD_LOGIC
+           );
 end prog_mem;
 
 architecture Behavioral of prog_mem is
@@ -37,9 +41,11 @@ begin
             if(we='1') then
                 if( full_addr /= RSTCAUSE and
                     full_addr /= TMROUT and
+                    full_addr /= TMRSTAT and
                     full_addr /= INA and
                     full_addr /= INB and
-                    full_addr /= TXSTAT
+                    full_addr /= UARTSTAT and
+                    full_addr /= RXREG
                     ) then
                     prog_mem(full_addr) <= in_data;
                 end if;
@@ -50,9 +56,11 @@ begin
             --set SFRs that are written to by peripherals
             prog_mem(RSTCAUSE + SFR_REGION_ADDR) <= rstcause_sfr;
             prog_mem(TMROUT + SFR_REGION_ADDR) <= tmrout_sfr;
+            prog_mem(TMRSTAT + SFR_REGION_ADDR) <= tmrstat_sfr;
             prog_mem(INA + SFR_REGION_ADDR) <= ina_sfr;
             prog_mem(INB + SFR_REGION_ADDR) <= inb_sfr;
-            prog_mem(TXSTAT + SFR_REGION_ADDR) <= txstat_sfr;
+            prog_mem(UARTSTAT + SFR_REGION_ADDR) <= uartstat_sfr;
+            prog_mem(RXREG + SFR_REGION_ADDR) <= rx_byte_sfr;
         end if;
     end process;
     
@@ -63,12 +71,25 @@ begin
     full_addr <= addr_intgr when (unsigned(region)=STACK_REGION) else
     addr_intgr + SFR_REGION_ADDR;
     
-    --full_addr_num <= to_integer(unsigned(full_addr));
-    --addr_sfr <= full_addr_num + SFR_REGION_ADDR;
+    --if we read from certain registers, do thing
+    --ok this would need to send a signal back to i.e. the uart module
+    process(we, region, addr_intgr)
+        variable reading_rxreg: std_logic;
+    begin
+        reading_rxreg := '0';
+        
+        if(we='0' and unsigned(region)=SFR_REGION) then
+            if(addr_intgr = RXREG) then
+                reading_rxreg := '1';
+            end if;
+        end if;
+        
+        rxreg_read_sig <= reading_rxreg;
+    end process;
     
-    --out_data <= prog_mem(to_integer(unsigned(full_addr)));
+    
     out_data <= prog_mem(full_addr) when full_addr<=PROC_MEMORY_END else
-    (others => '0');
+                (others => '0');
     prog_mem_out <= prog_mem;
     
 end Behavioral;

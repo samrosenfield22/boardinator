@@ -87,10 +87,14 @@ architecture Behavioral of processor is
            addr : in STD_LOGIC_VECTOR (7 downto 0);
            region : in STD_LOGIC_VECTOR (1 downto 0);
            
-           rstcause_sfr, tmrout_sfr, ina_sfr, inb_sfr, txstat_sfr: in STD_LOGIC_VECTOR (7 downto 0);
+           rstcause_sfr, tmrout_sfr, tmrstat_sfr, ina_sfr, inb_sfr,
+            uartstat_sfr, rx_byte_sfr: in STD_LOGIC_VECTOR (7 downto 0);
            
            out_data : out STD_LOGIC_VECTOR (7 downto 0);
-           prog_mem_out : out memarray_t);
+           prog_mem_out : out memarray_t;
+           
+           rxreg_read_sig : out STD_LOGIC
+           );
      end component;
      
      component reset_module
@@ -109,7 +113,7 @@ architecture Behavioral of processor is
         rst : in STD_LOGIC;
         clk : in STD_LOGIC;
         tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0);
-        tmrout_sfr : out STD_LOGIC_VECTOR (7 downto 0)
+        tmrout_sfr, tmrstat_sfr : out STD_LOGIC_VECTOR (7 downto 0)
     );
     end component;
     
@@ -124,11 +128,12 @@ architecture Behavioral of processor is
     
     component uart
     port (
-      rst, clk:               in std_logic;
-      txcon_reg, tx_byte_reg: in std_logic_vector(7 downto 0);
-      txstat_reg:             out std_logic_vector(7 downto 0);
+      rst, clk:                     in std_logic;
+      uartcon_reg, tx_byte_reg:     in std_logic_vector(7 downto 0);
+      uartstat_reg, rx_byte_reg:    out std_logic_vector(7 downto 0);
       txpin : out STD_LOGIC;
-      rxpin : in STD_LOGIC
+      rxpin : in STD_LOGIC;
+      rxreg_read_sig : in STD_LOGIC
     );
     end component;
      
@@ -151,9 +156,9 @@ architecture Behavioral of processor is
      signal ilgl_op: std_logic;
      
      --SFRs that get written to by peripherals
-     signal rstcause_sfr, tmrout_sfr: std_logic_vector(7 downto 0);
+     signal rstcause_sfr, tmrout_sfr, tmrstat_sfr: std_logic_vector(7 downto 0);
      signal ina_sfr, inb_sfr: std_logic_vector(7 downto 0);
-     signal txstat_sfr: std_logic_vector(7 downto 0);
+     signal uartstat_sfr, rx_byte_sfr: std_logic_vector(7 downto 0);
      
      signal temporary_processor_instr: std_logic_vector(15 downto 0);
      signal pc: std_logic_vector(9 downto 0);
@@ -163,6 +168,8 @@ architecture Behavioral of processor is
      signal test_out_int: std_logic_vector(7 downto 0) := "01010101";
      
      signal clk0, clk1, clk2, clk3: std_logic := '0';
+     
+     signal rxreg_read_sig : STD_LOGIC;
 
 begin
     
@@ -252,12 +259,16 @@ begin
         
         rstcause_sfr => rstcause_sfr,
         tmrout_sfr => tmrout_sfr,
+        tmrstat_sfr => tmrstat_sfr,
         ina_sfr => ina_sfr,
         inb_sfr => inb_sfr,
-        txstat_sfr => txstat_sfr,
+        uartstat_sfr => uartstat_sfr,
+        rx_byte_sfr => rx_byte_sfr,
         
         out_data => stack_data_out,
-        prog_mem_out => prog_mem_regs
+        prog_mem_out => prog_mem_regs,
+        
+        rxreg_read_sig => rxreg_read_sig
     );
     
     reset_mod: reset_module port map (
@@ -277,7 +288,8 @@ begin
         clk => clk,
         tmrcon_sfr => prog_mem_regs(TMRCON + SFR_REGION_ADDR),
         tmrcmp_sfr => prog_mem_regs(TMRCMP + SFR_REGION_ADDR),
-        tmrout_sfr => tmrout_sfr
+        tmrout_sfr => tmrout_sfr,
+        tmrstat_sfr => tmrstat_sfr
     );
     
     --test_out <= test_out_int;
@@ -300,11 +312,14 @@ begin
     uart_mod: uart port map (
         rst => rst,
         clk => clk,
-        txcon_reg => prog_mem_regs(TXCON + SFR_REGION_ADDR),
+        uartcon_reg => prog_mem_regs(UARTCON + SFR_REGION_ADDR),
         tx_byte_reg => prog_mem_regs(TXREG + SFR_REGION_ADDR),
-        txstat_reg => txstat_sfr,
+        uartstat_reg => uartstat_sfr,
+        rx_byte_reg => rx_byte_sfr,
         txpin => tx_pin,
-        rxpin => rx_pin
+        rxpin => rx_pin,
+        
+        rxreg_read_sig => rxreg_read_sig
     );
     
     --stack address selector

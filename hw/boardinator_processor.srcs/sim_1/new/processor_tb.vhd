@@ -78,19 +78,48 @@ begin
         wait for 1000*1000ms;
     end process;
     
-    switch_test: process
+    rxtest: process
     begin
-        gpio_pins(10 downto 8) <= "000";
-        wait for 1ms;
-        gpio_pins(10 downto 8) <= "001";
-        wait for 1ms;
-        gpio_pins(10 downto 8) <= "010";
-        wait for 1ms;
-        gpio_pins(10 downto 8) <= "100";
-        wait for 1ms;
-        gpio_pins(10 downto 8) <= "110";
-        wait for 1ms;
+        rx <= '1';
+        wait for 5ms;
         
+        rx <= '0';          --start
+        wait for 0.104ms;
+        rx <= '1';          --b0
+        wait for 0.104ms;
+        rx <= '0';          --b1
+        wait for 0.104ms;
+        rx <= '1';          --b2
+        wait for 0.104ms;
+        rx <= '1';          --b3
+        wait for 0.104ms;
+        rx <= '1';          --b4
+        wait for 0.104ms;
+        rx <= '1';          --b5
+        wait for 0.104ms;
+        rx <= '0';          --b6
+        wait for 0.104ms;
+        rx <= '0';          --b7
+        wait for 0.104ms;
+        rx <= '1';          --stop
+        wait for 0.104ms;
+        
+        wait for 5000ms;
     end process;
+    
+--    switch_test: process
+--    begin
+--        gpio_pins(10 downto 8) <= "000";
+--        wait for 1ms;
+--        gpio_pins(10 downto 8) <= "001";
+--        wait for 1ms;
+--        gpio_pins(10 downto 8) <= "010";
+--        wait for 1ms;
+--        gpio_pins(10 downto 8) <= "100";
+--        wait for 1ms;
+--        gpio_pins(10 downto 8) <= "110";
+--        wait for 1ms;
+        
+--    end process;
 
 end Behavioral;

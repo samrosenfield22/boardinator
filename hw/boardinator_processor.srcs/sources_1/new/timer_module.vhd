@@ -15,7 +15,7 @@ entity timer_module is
         rst : in STD_LOGIC;
         clk : in STD_LOGIC;
         tmrcon_sfr, tmrcmp_sfr : in STD_LOGIC_VECTOR (7 downto 0);
-        tmrout_sfr : out STD_LOGIC_VECTOR (7 downto 0)
+        tmrout_sfr, tmrstat_sfr : out STD_LOGIC_VECTOR (7 downto 0)
     );
 end timer_module;
     
@@ -104,8 +104,9 @@ begin
         tmr_cnt <= tmr_cnt_v;
     end process;
     
+    tmrout_sfr <= tmr_cnt;
     
     tmr_match <= '1' when (tmr_cnt = tmrcmp_sfr) else '0';
-    tmrout_sfr(0) <= tmr_match;
+    tmrstat_sfr(0) <= tmr_match;
 
 end Behavioral;

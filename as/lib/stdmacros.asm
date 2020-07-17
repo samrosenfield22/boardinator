@@ -43,9 +43,12 @@
 
 .define "TMRCMP"	"3"
 .define "TMROUT"	"4"
-.define "TXCON"		"8"
-.define "TXREG"		"9"
-.define "TXSTAT"	"10"
+.define "TMRSTAT"	"5"
+
+.define "UARTCON"	"10"
+.define "UARTSTAT"	"11"
+.define "TXREG"		"12"
+.define "RXREG"		"13"
 
 .define "MODEA" "0x20"
 .define "INA" 	"0x21"
