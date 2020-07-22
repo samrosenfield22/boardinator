@@ -26,6 +26,10 @@ NET "gpio_pins<10>" LOC = P116 | IOSTANDARD = LVTTL;
 #NET "gpio_pins<14>" LOC = P | IOSTANDARD = LVTTL;
 #NET "gpio_pins<15>" LOC = P | IOSTANDARD = LVTTL;
 
+NET "tx_pin" LOC = P121 | IOSTANDARD = LVTTL;
+NET "rx_pin" LOC = P119 | IOSTANDARD = LVTTL;
+
+
 #NET "gpio_pins<>" LOC = P | IOSTANDARD = LVTTL;
 
 #NET "spi_mosi" LOC = P44 | IOSTANDARD = LVTTL;

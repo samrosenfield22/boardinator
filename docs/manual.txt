@@ -35,10 +35,9 @@ For more information about the stack layout, see section III.iii, "Stack structu
 Memory:
 The processor contains a special region of memory, proc_mem. This memory is split into 256-byte regions, which are as follows:
 Region 0: stack
-Region 1: bss (unimplemented)
-Region 2: SFRs
+Region 1: SFRs
 
-proc_mem can be read or written to using the getmem and setmem instructions.
+proc_mem can be read or written to using the getm and setm instructions.
 
 ---------------------------------------------------------------------------------------
 II. ISA
@@ -87,7 +86,7 @@ Things it does support:
 * Include directives (.include "filename"). The file can be in the working directory, as/lib/, or as/.
 	* Unlike with a typical include directive, the included text is not added at the location of the directive -- it's appended to the end of the file.
 * Define directives (macros). These can have no arguments, or 1 or 2 arguments. Both terms must be wrapped in double quotes, ex.
-	.define "inc_by_1 reg" "addl reg,1"
+	.define "inc reg" "addl reg,1"
 
 ii. Stack-manipulation macros
 Several standard macros are defined in stdmacros.asm (located in as/lib/). This includes macros for functions and stack manipulation, such as:
@@ -128,18 +127,17 @@ Arguments start at *(sp-(3 + locals)) -- alternatively, they can be read before 
 iv. Tips
 Notes about writing assembly code for the Boardinator
 
-* The only ALU instructions which accept literals as arguments are; set, addl, subl. Any other operation which involves a literal must be split into 2 instructions
+* The only ALU instructions which accept literals as arguments are; set, addl, subl, cmpl. Any other operation which involves a literal must be split into 2 instructions
 Ex. to do
 	r0 ^= 0x0F
 You'd do:
 	set r1,0x0F
 	xor r0,r1
 
-* "cmp" is the only instruction which modifies the flag bits -- it must be used for conditional jumps
+* "cmp" and "cmpl" are the only instructions which modifies the flag bits -- they must be used for conditional jumps
 Ex. to do
-	if(r0 > 0x35) goto label;
+	if(r0 > r1) goto label;
 You'd do:
-	set r1,0x35
 	cmp r0,r1
 	jgt label
 
@@ -148,15 +146,15 @@ IV. Peripherals
 
 i. General info
 Currently Boardinator has the following peripheral modules:
-reset, timer
+reset, timer, gpio, uart (in progress)
 Eventualy it will also have:
-gpio, uart, vga, spi?, interrupt?
+vga, spi?, interrupt?
 
 Each peripheral is controlled by reading/writing to its SFRs (special function registers) using the setmem and getmem instructions.
 Ex
 set 	r1,TMRCMP
 set 	r0,0x55
-setmem 	r1,r0,SFR_REGION	;sets the TMRCMP register to 0x55
+setm 	r1,r0,SFR_REGION	;sets the TMRCMP register to 0x55
 
 This manual contains general info about each peripheral. For details about SFR specifics/using a peripheral, consult the SFR spreadsheet (docs/sfr_spec.xlsx)
 

@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; void init_timer(u8 prescale, u8 compare)
 ;
-; initializes the timer peripheral using the given clock prescaler and compare settings. assumes a 50MHz sysclk.
+; initializes the timer peripheral using the given clock prescaler and compare settings. assumes a (50/32)MHz sysclk.
 ; use the SFR calculator (docs/sfr_calcluators.xlsx) to generate these values.
 ;
 ; args:
@@ -37,9 +37,49 @@
 
 	ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;clk is (50/32)MHz
+.define "MS_TMRCMP"	"195"
+.define "MS_TMRCON"	"0x83"	;0x80 | prescale
+	delay_ms:
 
-	delay:
+	push		r0
+	push		r1
 
+	subl		sp,5
+	getm		r0,sp,STACK_REGION,0
+	addl		sp,5
 
+	sfr_write	TMRCON,0x00		;turn off timer to reset counter
+	sfr_write	TMRCMP,MS_TMRCMP
+	sfr_write	TMRCON,MS_TMRCON
+
+	set 		r4,TMRSTAT
+	jmp			delay_ms_cond
+
+	;while((TMRSTAT & 1) != 1) {}
+	delay_ms_loop:
+	getm		r1,r4,SFR_REGION,0
+	set 		r5,1
+	and			r1,r5
+	cmpl 		r1,1
+	jne			delay_ms_loop
+
+	;while((TMRSTAT & 1) == 1) {}
+	delay_ms_wait_til_lo:
+	getm		r1,r4,SFR_REGION,0
+	set 		r5,1
+	and			r1,r5
+	cmpl 		r1,1
+	jeq			delay_ms_wait_til_lo
+
+	subl		r0,1
+
+	delay_ms_cond:
+	cmpl		r0,0
+	jne			delay_ms_loop
+	
+	pop			r1
+	pop			r0
 	ret
 

@@ -127,7 +127,7 @@ architecture Behavioral of processor is
     end component;
     
     component uart
-    port (
+    Port (
       rst, clk:                     in std_logic;
       uartcon_reg, tx_byte_reg:     in std_logic_vector(7 downto 0);
       uartstat_reg, rx_byte_reg:    out std_logic_vector(7 downto 0);

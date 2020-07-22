@@ -104,29 +104,29 @@ transmitter : process(tx_start, tmr_tick, tx_clk)
   variable tx_shift_cnt:    natural := 0;
   variable tx_word:         std_logic_vector(WORDLEN-1 downto 0);
 begin
-  if(tx_start'event and tx_start='1') then
-    tx_busy := '1';
-    tx_shift_cnt := WORDLEN;
-    tx_word := stopbits & tx_byte_reg & startbits;
-  end if;
-  
-  if(tx_busy='1') then
+  if(tx_busy='0') then
+	 txint <= '1';
+    tx_clk <= '0';
+	 
+	 if(tx_start'event and tx_start='1') then
+      tx_busy := '1';
+      tx_shift_cnt := WORDLEN;
+      tx_word := stopbits & tx_byte_reg & startbits;
+	 end if;
+  else
     if (tmr_tick'event and tmr_tick='1') then
         tx_clk <= not(tx_clk);
     end if;
-  else
-    txint <= '1';
-    tx_clk <= '0';
-  end if;
-  
-  if(tx_clk'event and tx_clk='1') then
-    if(tx_shift_cnt = 0) then
-        tx_busy := '0';
-    else
-        txint <= tx_word(0);
-        tx_word := "0" & tx_word(WORDLEN-1 downto 1);
-        tx_shift_cnt := tx_shift_cnt-1;
-    end if;
+    
+    if(tx_clk'event and tx_clk='1') then
+      if(tx_shift_cnt = 0) then
+          tx_busy := '0';
+      else
+          txint <= tx_word(0);
+          tx_word := "0" & tx_word(WORDLEN-1 downto 1);
+          tx_shift_cnt := tx_shift_cnt-1;
+      end if;
+    end if; 
   end if;
 
   uartstat_reg(TXBUSY_BIT) <= tx_busy;
@@ -145,32 +145,34 @@ receiver: process(rxint, rx_tick, rxreg_read_sig)
     variable rx_shift_cnt:      natural := 0;
     variable is_sample:         std_logic := '1';
 begin
-    if(rx_busy='0' and (rxint'event and rxint='0')) then
-        rx_busy := '1';
-        rx_shift_cnt := WORDLEN;
-        rx_match_val <= uart_tmr_val;
-        is_sample := '1';
-    end if;
-    
-    if(rx_busy='1' and (rx_tick'event and rx_tick='1')) then
-        is_sample := not(is_sample);
-        if(is_sample = '1') then
-            if(rx_shift_cnt = 0) then
-                rx_busy := '0';
-                rx_avail := '1';
-                rx_match_val <= (others => '0');    --
-                rx_byte_reg <= rx_word(STARTBIT_CNT+7 downto STARTBIT_CNT);
-                
-                --check for framing error?
-            else
-                rx_word := rxint & rx_word(WORDLEN-1 downto 1);
-                rx_shift_cnt := rx_shift_cnt - 1;
+    if(rx_busy = '0') then
+        if(rxint'event and rxint='0') then
+            rx_busy := '1';
+            rx_shift_cnt := WORDLEN;
+            rx_match_val <= uart_tmr_val;
+            is_sample := '1';
+        end if;
+        
+        if(rx_avail='1' and (rxreg_read_sig'event and rxreg_read_sig='1')) then
+            rx_avail := '0';
+        end if;
+    else
+        if(rx_tick'event and rx_tick='1') then
+            is_sample := not(is_sample);
+            if(is_sample = '1') then
+                if(rx_shift_cnt = 0) then
+                    rx_busy := '0';
+                    rx_avail := '1';
+                    rx_match_val <= (others => '0');    --
+                    rx_byte_reg <= rx_word(STARTBIT_CNT+7 downto STARTBIT_CNT);
+                    
+                    --check for framing error?
+                else
+                    rx_word := rxint & rx_word(WORDLEN-1 downto 1);
+                    rx_shift_cnt := rx_shift_cnt - 1;
+                end if;
             end if;
         end if;
-    end if;
-    
-    if(rx_avail='1' and (rxreg_read_sig'event and rxreg_read_sig='1')) then
-        rx_avail := '0';
     end if;
     
     uartstat_reg(RXBUSY_BIT) <= rx_busy;
