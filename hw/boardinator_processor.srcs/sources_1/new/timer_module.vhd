@@ -108,5 +108,6 @@ begin
     
     tmr_match <= '1' when (tmr_cnt = tmrcmp_sfr) else '0';
     tmrstat_sfr(0) <= tmr_match;
+    tmrstat_sfr(7 downto 1) <= (others => '0');
 
 end Behavioral;

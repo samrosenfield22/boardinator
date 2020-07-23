@@ -19,23 +19,23 @@
 ; comments:
 ; this function does not create a stack frame, and it uses sp-based offsets
 ;
-	init_timer:
-
-	;read compare arg, write it to SFR
-	subl 	sp,4
-	getm 	r4,sp,STACK_REGION,0
-	set 	r5,TMRCMP
-	setm	r5,r4,SFR_REGION,0		;if we had "orl", we could do a decrement setm here, then below we wouldn't need set r5,TMRCON
-
-	addl	sp,1
-	getm 	r4,sp,STACK_REGION,0	;prescale
-	set 	r5,TMRON
-	or		r4,r5
-	set 	r5,TMRCON
-	setm	r5,r4,SFR_REGION,0
-	addl	sp,3
-
-	ret
+;	init_timer:
+;
+;	;read compare arg, write it to SFR
+;	subl 	sp,4
+;	getm 	r4,sp,STACK_REGION,0
+;	set 	r5,TMRCMP
+;	setm	r5,r4,SFR_REGION,0		;if we had "orl", we could do a decrement setm here, then below we wouldn't need set r5,TMRCON
+;
+;	addl	sp,1
+;	getm 	r4,sp,STACK_REGION,0	;prescale
+;	set 	r5,TMRON
+;	or		r4,r5
+;	set 	r5,TMRCON
+;	setm	r5,r4,SFR_REGION,0
+;	addl	sp,3
+;
+;	ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;clk is (50/32)MHz
@@ -56,11 +56,11 @@
 
 	set 		r4,TMRSTAT
 	jmp			delay_ms_cond
+	set 		r5,1
 
 	;while((TMRSTAT & 1) != 1) {}
 	delay_ms_loop:
 	getm		r1,r4,SFR_REGION,0
-	set 		r5,1
 	and			r1,r5
 	cmpl 		r1,1
 	jne			delay_ms_loop
