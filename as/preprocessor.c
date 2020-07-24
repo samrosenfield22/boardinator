@@ -41,9 +41,10 @@ FILE *preprocess(const char *fpath)
 	iterate_file(TEMPFILE4, TEMPFILE5, expand_macros, true);
 	iterate_file(TEMPFILE5, TEMPFILE6, expand_macros, true);
 	iterate_file(TEMPFILE6, TEMPFILE7, expand_macros, true);
-	iterate_file(TEMPFILE7, TEMPFILE8, load_labels, true);
+	iterate_file(TEMPFILE7, TEMPFILE8, expand_macros, true);
+	iterate_file(TEMPFILE8, TEMPFILE9, load_labels, true);
 
-	FILE *preprocessed = fopen(TEMPFILE8, "r");
+	FILE *preprocessed = fopen(TEMPFILE9, "r");
 	return preprocessed;
 }
 

@@ -180,7 +180,9 @@ int get_reg_num(char *arg, const char *fn, int linenum)
 int get_arg_num(char *arg, const char *fn, int linenum)
 {
 	if(!arg) error(fn, linenum, "missing argument");
-	int argnum = strtol(arg, NULL, 0);
+	char *strend;
+	int argnum = strtol(arg, &strend, 0);
+	if(strend == arg) error(fn, linenum, "invalid argument \'%s\'", arg);
 	return argnum;
 }
 

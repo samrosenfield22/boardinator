@@ -36,6 +36,7 @@
 #define TEMPFILE6 "tempfile6.asm"
 #define TEMPFILE7 "tempfile7.asm"
 #define TEMPFILE8 "tempfile8.asm"
+#define TEMPFILE9 "tempfile9.asm"
 
 #define MAX_INCLUDES	(100)
 

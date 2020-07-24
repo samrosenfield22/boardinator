@@ -50,7 +50,7 @@ constant LO_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "01010001"; --81;
 constant HI_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0000";     --0
 constant HI_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "00000111"; --7    3.2% error
 
-signal txint, rxint:    std_logic := '1';
+signal txint, rxint, rxint_r:    std_logic := '1';
 
 --signal tx_word:         std_logic_vector(WORDLEN-1 downto 0);
 signal startbits:       std_logic_vector(STARTBIT_CNT-1 downto 0);
@@ -70,7 +70,9 @@ signal tmrcon:          std_logic_vector(7 downto 0);
 signal baud_hilo:       std_logic;
 
 signal rx_match_val:    std_logic_vector(7 downto 0) := (others => '0');
-signal rx_tick:         std_logic := '0';
+signal rx_tick, rx_tick_r:         std_logic := '0';
+signal rxreg_read_sig_r:    std_logic := '0';
+signal rx_byte_reg_buf:     std_logic_vector(7 downto 0) := (others => '0');
 
 signal dummy_open:      std_logic_vector(6 downto 0);
 
@@ -90,6 +92,7 @@ uart_tmr_cmp <= LO_BAUD_COMPARE when baud_hilo='0' else HI_BAUD_COMPARE;
 tmrcon <= uartcon_reg(TX_EN_BIT) & "000" & uart_tmr_prescale;
 
 uartstat_reg <= uartstat_buf;
+rx_byte_reg <= rx_byte_reg_buf;
 
 uart_timer: timer_module port map (
         rst => rst,
@@ -208,46 +211,112 @@ rxint <=    rxpin when loopback='0' else
 
 rx_tick <= '1' when (rx_match_val = uart_tmr_val) else '0';
 
-receiver: process(rxint, rx_tick, rxreg_read_sig)
+receiver: process(clk)
+    type rxState_t is (IDLE, BUSY, DONE);
+    variable rxState : rxState_t := IDLE;
+  
     variable rx_word:           std_logic_vector(WORDLEN-1 downto 0) := (others => '0');
-    variable rx_busy, rx_avail: std_logic := '0';
+    variable rx_avail: std_logic := '0';
     --variable rx_match_val:  std_logic_vector(7 downto 0) := (others => '0');
     variable rx_shift_cnt:      natural := 0;
     variable is_sample:         std_logic := '1';
 begin
-    if(rx_busy = '0') then
-        if(rxint'event and rxint='0') then
-            rx_busy := '1';
-            rx_shift_cnt := WORDLEN;
-            rx_match_val <= uart_tmr_val;
-            is_sample := '1';
-        end if;
-        
-        if(rx_avail='1' and (rxreg_read_sig'event and rxreg_read_sig='1')) then
-            rx_avail := '0';
-        end if;
-    else
-        if(rx_tick'event and rx_tick='1') then
-            is_sample := not(is_sample);
-            if(is_sample = '1') then
-                if(rx_shift_cnt = 0) then
-                    rx_busy := '0';
-                    rx_avail := '1';
-                    rx_match_val <= (others => '0');    --
-                    rx_byte_reg <= rx_word(STARTBIT_CNT+7 downto STARTBIT_CNT);
-                    
-                    --check for framing error?
-                else
-                    rx_word := rxint & rx_word(WORDLEN-1 downto 1);
-                    rx_shift_cnt := rx_shift_cnt - 1;
-                end if;
-            end if;
-        end if;
-    end if;
+
+    if(rising_edge(clk)) then
     
-    uartstat_buf(RXBUSY_BIT) <= rx_busy;
-    uartstat_buf(RXAVAIL_BIT) <= rx_avail;
+        --register to look for edges
+        rxreg_read_sig_r <= rxreg_read_sig;
+        rxint_r <= rxint;
+        rx_tick_r <= rx_tick;
+        
+        case rxState is
+        
+            when IDLE =>
+                uartstat_buf(RXBUSY_BIT) <= '0';
+                
+                if(rxint_r = '1' and rxint = '0') then
+                    rxState := BUSY;
+                    rx_word := (others => '0');
+                    rx_shift_cnt := WORDLEN;
+                    rx_match_val <= uart_tmr_val;
+                    is_sample := '0';
+                end if;
+                
+                if(rx_avail = '1' and (rxreg_read_sig_r = '0' and rxreg_read_sig = '1')) then
+                    rx_avail := '0';
+                end if;
+            
+            when BUSY =>
+                uartstat_buf(RXBUSY_BIT) <= '1';
+                
+                if(rx_tick_r = '0' and rx_tick = '1') then
+                    is_sample := not(is_sample);
+                    if(is_sample = '1') then
+                        if(rx_shift_cnt = 0) then
+                            rxState := DONE;
+                        else
+                            rx_word := rxint & rx_word(WORDLEN-1 downto 1);
+                            rx_shift_cnt := rx_shift_cnt - 1;
+                        end if;
+                    end if;
+                end if;
+            
+            when DONE =>
+                uartstat_buf(RXBUSY_BIT) <= '0';
+                rx_avail := '1';
+                rx_match_val <= (others => '0');    --
+                rx_byte_reg_buf <= rx_word(STARTBIT_CNT+7 downto STARTBIT_CNT);
+                --check for framing error?
+                
+                rxState := IDLE;
+        end case;
+
+        
+        --uartstat_buf(RXBUSY_BIT) <= rx_busy;
+        uartstat_buf(RXAVAIL_BIT) <= rx_avail;
+    end if;
 end process;
+
+--receiver: process(rxint, rx_tick, rxreg_read_sig)
+--    variable rx_word:           std_logic_vector(WORDLEN-1 downto 0) := (others => '0');
+--    variable rx_busy, rx_avail: std_logic := '0';
+--    --variable rx_match_val:  std_logic_vector(7 downto 0) := (others => '0');
+--    variable rx_shift_cnt:      natural := 0;
+--    variable is_sample:         std_logic := '1';
+--begin
+--    if(rx_busy = '0') then
+--        if(rxint'event and rxint='0') then
+--            rx_busy := '1';
+--            rx_shift_cnt := WORDLEN;
+--            rx_match_val <= uart_tmr_val;
+--            is_sample := '1';
+--        end if;
+        
+--        if(rx_avail='1' and (rxreg_read_sig'event and rxreg_read_sig='1')) then
+--            rx_avail := '0';
+--        end if;
+--    else
+--        if(rx_tick'event and rx_tick='1') then
+--            is_sample := not(is_sample);
+--            if(is_sample = '1') then
+--                if(rx_shift_cnt = 0) then
+--                    rx_busy := '0';
+--                    rx_avail := '1';
+--                    rx_match_val <= (others => '0');    --
+--                    rx_byte_reg <= rx_word(STARTBIT_CNT+7 downto STARTBIT_CNT);
+                    
+--                    --check for framing error?
+--                else
+--                    rx_word := rxint & rx_word(WORDLEN-1 downto 1);
+--                    rx_shift_cnt := rx_shift_cnt - 1;
+--                end if;
+--            end if;
+--        end if;
+--    end if;
+    
+--    uartstat_buf(RXBUSY_BIT) <= rx_busy;
+--    uartstat_buf(RXAVAIL_BIT) <= rx_avail;
+--end process;
 
 
 
