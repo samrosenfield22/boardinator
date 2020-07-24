@@ -55,7 +55,7 @@ signal txint, rxint:    std_logic := '1';
 --signal tx_word:         std_logic_vector(WORDLEN-1 downto 0);
 signal startbits:       std_logic_vector(STARTBIT_CNT-1 downto 0);
 signal stopbits:        std_logic_vector(STOPBIT_CNT-1 downto 0);
-signal tx_start:        std_logic := '0';
+--signal tx_start:        std_logic := '0';
 
 signal uart_tmr_prescale:   std_logic_vector(3 downto 0);
 signal uart_tmr_cmp:        std_logic_vector(7 downto 0);
@@ -64,8 +64,8 @@ signal loopback:            std_logic := '0';
 
 signal uartstat_buf:        std_logic_vector(7 downto 0) := (others => '0');
 
-signal tmr_tick:        std_logic := '0';
-signal tx_clk:          std_logic := '0';
+--signal tmr_tick:        std_logic := '0';
+--signal tx_clk:          std_logic := '0';
 signal tmrcon:          std_logic_vector(7 downto 0);
 signal baud_hilo:       std_logic;
 
@@ -73,6 +73,11 @@ signal rx_match_val:    std_logic_vector(7 downto 0) := (others => '0');
 signal rx_tick:         std_logic := '0';
 
 signal dummy_open:      std_logic_vector(6 downto 0);
+
+-- Signals for tx_start and busy
+signal txStart, txStart_r : std_logic := '0';
+signal txBusy, txBusy_r : std_logic := '0';
+signal tmr_tick, tmrTick_r : std_logic := '0';
 
 begin
 
@@ -97,48 +102,105 @@ uart_timer: timer_module port map (
     );
 
 --transmit
-tx_start <= uartcon_reg(TX_START_BIT);
+txStart <= uartcon_reg(TX_START_BIT);
 stopbits <= (others => '1');
 startbits <= (others => '0');
 --tx_word <= stopbits & tx_byte_reg & startbits;
 
 --when tx_start transitions hi, load the word, then shift it out on every timer tick
 --transmitter : process(tx_start, tmr_tick, tx_clk)
-transmitter : process(tx_start, tmr_tick)
-  variable tx_busy:         std_logic := '0';
-  variable tx_shift_cnt, cnt_next:    natural := 0;
-  variable tx_word:         std_logic_vector(WORDLEN-1 downto 0);
-begin
-  if(tx_busy='0') then
-	 txint <= '1';
-     tx_clk <= '0';
+--transmitter : process(tx_start, tmr_tick)
+--  variable tx_busy:         std_logic := '0';
+--  variable tx_shift_cnt, cnt_next:    natural := 0;
+--  variable tx_word:         std_logic_vector(WORDLEN-1 downto 0);
+--begin
+--  if(tx_busy='0') then
+--	 txint <= '1';
+--     tx_clk <= '0';
 	 
-	 if(tx_start'event and tx_start='1') then
-      tx_busy := '1';
-      uartstat_buf(TXBUSY_BIT) <= '1';
-      tx_shift_cnt := WORDLEN;
-      tx_word := stopbits & tx_byte_reg & startbits;
-	 end if;
-  else
-    if (tmr_tick'event and tmr_tick='1') then
-        if(tx_clk='0') then
-          if(tx_shift_cnt = 0) then
-              tx_busy := '0';
-              uartstat_buf(TXBUSY_BIT) <= '0';
-              --txint <= '1';
-          else
+--	 if(tx_start'event and tx_start='1') then
+--      tx_busy := '1';
+--      uartstat_buf(TXBUSY_BIT) <= '1';
+--      tx_shift_cnt := WORDLEN;
+--      tx_word := stopbits & tx_byte_reg & startbits;
+--	 end if;
+--  else
+--    if (tmr_tick'event and tmr_tick='1') then
+--        if(tx_clk='0') then
+--          if(tx_shift_cnt = 0) then
+--              tx_busy := '0';
+--              uartstat_buf(TXBUSY_BIT) <= '0';
+--              --txint <= '1';
+--          else
+--              txint <= tx_word(0);
+--              tx_word := "0" & tx_word(WORDLEN-1 downto 1);
+--              tx_shift_cnt := tx_shift_cnt-1;
+--          end if;
+--        end if; 
+        
+--        tx_clk <= not(tx_clk);
+--    end if;
+--  end if;
+
+--  --uartstat_buf(TXBUSY_BIT) <= tx_busy;
+--end process;
+
+
+
+
+transmitter : process(clk)
+  type txState_t is (IDLE, BUSY, DONE);
+  variable txState : txState_t := IDLE;
+  
+  variable tx_shift_cnt, cnt_next: natural := 0;
+  variable tx_word: std_logic_vector(WORDLEN-1 downto 0);
+  variable tx_clk: std_logic := '0';
+begin
+
+  if rising_edge(clk) then
+
+  -- Register to look for edges 
+  txStart_r <= txStart;
+  txBusy_r <= txBusy;
+  tmrTick_r <= tmr_tick;
+
+    case (txState) is
+      when IDLE =>
+        if (txStart_r = '0' and txStart = '1') then
+          txState := BUSY;
+          txint <= '1';
+          tx_shift_cnt := WORDLEN;
+          tx_clk := '0';
+          tx_word := stopbits & tx_byte_reg & startbits;
+        end if;
+
+      when BUSY =>
+        txBusy  <= '1';
+        if(tmrTick_r = '0' and tmr_tick = '1') then
+          if(tx_clk = '0') then
+            if (tx_shift_cnt = 0) then
+              txState := DONE;
+            else
               txint <= tx_word(0);
               tx_word := "0" & tx_word(WORDLEN-1 downto 1);
-              tx_shift_cnt := tx_shift_cnt-1;
+              tx_shift_cnt := tx_shift_cnt - 1;
+            end if;
           end if;
-        end if; 
-        
-        tx_clk <= not(tx_clk);
-    end if;
-  end if;
 
-  --uartstat_buf(TXBUSY_BIT) <= tx_busy;
+          tx_clk := not(tx_clk);
+        end if;
+
+      when DONE =>
+        -- Reset things here
+        txBusy  <= '0';
+        txState := IDLE;
+    end case;
+
+    uartstat_buf(TXBUSY_BIT) <= txBusy;
+
+  end if;
 end process;
+
 
 loopback <= uartcon_reg(LOOPBACK_BIT);
 rxint <=    rxpin when loopback='0' else
