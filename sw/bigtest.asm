@@ -117,64 +117,8 @@
 	
 
 	
-;;;;;;;;;;;;;;;;;;;;;;;;;
-	factorial:
-	enter
-
-	;push	r1
-	push	r2
-	push	r3
-
-	factorial_init:
-	getarg 	r2,0
-	set		r3,1
-
-	factorial_loop:
-	cmpl	r2,1
-	jeq		factorial_exit
-
-	;fact *= i
-	push	r3
-	push	r2
-	call	badmult8
-	subl	sp,2
-	;mov		r3,r1
-	mov		r3,r0
-
-	factorial_loop_end:
-	subl	r2,1
-	jmp		factorial_loop
-
-	factorial_exit:
-	mov		r0,r3
-	pop		r3
-	pop		r2
-	;pop 	r1
-	leave
-	ret
-
 
 ;;;;;;;;;;;;;;;;;;;;;;
 
-	badmult8:
-
-	subl	sp,3
-	getm	r4,sp,STACK_REGION,0
-	subl	sp,1
-	getm	r5,sp,STACK_REGION,0
-	addl	sp,4
-
-	set 	r0,0
 	
-	jmp		badmult_loop_cond
-
-	badmult_loop:
-	add 	r0,r4
-	subl	r5,1
-
-	badmult_loop_cond:
-	cmpl	r5,0
-	jne		badmult_loop
-
-	ret
 

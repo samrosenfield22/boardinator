@@ -122,93 +122,117 @@
 ; return:
 ; [r0:r1], the product
 ;
+; note: THIS DOES NOT WORK CORRECTLY! using the less efficient (but correctly working) version below
+;
+	;mult8:
+	;enter
+
+	;;u16 sum=0
+	;;u8 mask=1
+	;;for(u8 i=0; i<8; i++)
+	;;	if(b & mask)
+	;;		sum += (a<<i)
+	;;	mask<<=1
+
+	;;reserve 3 bytes of locals
+	;mklcl 	3
+
+	;;save some regs
+	;push 	r2
+	;push 	r3
+
+	;;i=0, sum=0, mask=1
+	;set 	r2,0	;i = 0	
+	;set 	r0,0
+	;setlcl	0,r0	;sum (hi) = 0
+	;setlcl	1,r0	;sum (lo) = 0
+	;set 	r0,1
+	;setlcl	2,r0	;mask = 1
+
+	;mult8_loop:
+
+	;;if(i > 7) goto exit
+	;cmpl	r2,7
+	;jgt 	mult8_exit
+
+	;;if((b & mask) != 0) ...
+	;getarg	r1,1	;b
+	;getlcl	r3,2	;mask
+	;and 	r1,r3
+	;cmpl	r1,0
+	;jne		mult8_shift_and_add
+	;jmp		mult8_loop_end
+
+	;mult8_shift_and_add:
+
+	;;a<<i
+	;set 	r0,0
+	;getarg	r1,0	;a
+	;push	r2		;shift by i bits
+	;push	r1
+	;push	r0
+	;call	lsl16
+	;subl	sp,3
+
+	;;sum += (a<<i)
+	;getlcl	r3,0	;sum
+	;getlcl	r4,1
+	;push	r4
+	;push	r3
+	;push	r1
+	;push	r0
+	;mov		r3,r2	;add16 is going to overwrite r2 (i) with the overflow boolean
+	;call	add16
+	;subl	sp,4
+	;setlcl	0,r0
+	;setlcl	1,r1
+	;mov		r2,r3
+
+	;mult8_loop_end:
+
+	;;mask<<=1
+	;getlcl	r0,2
+	;set 	r1,1
+	;lsl 	r0,r1
+	;setlcl	2,r0
+
+	;;i++
+	;addl 	r2,1
+	;jmp 	mult8_loop
+
+	;mult8_exit:
+	;getlcl	r0,0
+	;getlcl	r1,1
+	;pop 	r3
+	;pop		r2
+	;leave
+	;ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;
 	mult8:
-	enter
 
-	;u16 sum=0
-	;u8 mask=1
-	;for(u8 i=0; i<8; i++)
-	;	if(b & mask)
-	;		sum += (a<<i)
-	;	mask<<=1
-
-	;reserve 3 bytes of locals
-	mklcl 	3
-
-	;save some regs
-	push 	r2
-	push 	r3
-
-	;i=0, sum=0, mask=1
-	set 	r2,0	;i = 0	
-	set 	r0,0
-	setlcl	0,r0	;sum (hi) = 0
-	setlcl	1,r0	;sum (lo) = 0
-	set 	r0,1
-	setlcl	2,r0	;mask = 1
-
-	mult8_loop:
-
-	;if(i > 7) goto exit
-	cmpl	r2,7
-	jgt 	mult8_exit
-
-	;if((b & mask) != 0) ...
-	getarg	r1,1	;b
-	getlcl	r3,2	;mask
-	and 	r1,r3
-	cmpl	r1,0
-	jne		mult8_shift_and_add
-	jmp		mult8_loop_end
-
-	mult8_shift_and_add:
-
-	;a<<i
-	set 	r0,0
-	getarg	r1,0	;a
-	push	r2		;shift by i bits
-	push	r1
-	push	r0
-	call	lsl16
 	subl	sp,3
+	getm	r4,sp,STACK_REGION,0
+	subl	sp,1
+	getm	r5,sp,STACK_REGION,0
+	addl	sp,4
 
-	;sum += (a<<i)
-	getlcl	r3,0	;sum
-	getlcl	r4,1
-	push	r4
-	push	r3
-	push	r1
-	push	r0
-	mov		r3,r2	;add16 is going to overwrite r2 (i) with the overflow boolean
-	call	add16
-	subl	sp,4
-	setlcl	0,r0
-	setlcl	1,r1
-	mov		r2,r3
+	;for(r5=b; r5!=0; r5--) {sum += r4;}
+	set 	r0,0
+	jmp		mult_loop_cond
+	mult_loop:
+	add 	r0,r4
+	subl	r5,1
+	mult_loop_cond:
+	cmpl	r5,0
+	jne		mult_loop
 
-	mult8_loop_end:
-
-	;mask<<=1
-	getlcl	r0,2
-	set 	r1,1
-	lsl 	r0,r1
-	setlcl	2,r0
-
-	;i++
-	addl 	r2,1
-	jmp 	mult8_loop
-
-	mult8_exit:
-	getlcl	r0,0
-	getlcl	r1,1
-	pop 	r3
-	pop		r2
-	leave
 	ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ; computes div (in r0) and mod (in r1)
-; goes in math.asm
 ; no stack frame
 	
 	div8:
@@ -240,5 +264,61 @@
 	
 	pop	r2
 	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+	factorial:
+	enter
+
+	push	r2
+	;push	r3
+
+
+	factorial_init:
+	getarg 	r0,0
+	mov 	r2,r0
+	jmp		factorial_loop_cond
+
+	factorial_loop:
+
+	;fact *= i
+	push	r0
+	push	r2
+	call	mult8
+	subl	sp,2
+
+	factorial_loop_cond:
+	subl	r2,1
+	cmpl	r2,1
+	jgt		factorial_loop
+
+
+
+	;factorial_init:
+	;getarg 	r2,0
+	;set		r3,1
+	;
+	;factorial_loop:
+	;cmpl	r2,1
+	;jeq		factorial_exit
+	;
+	;;fact *= i
+	;push	r3
+	;push	r2
+	;call	mult8
+	;subl	sp,2
+	;mov		r3,r0
+	;
+	;factorial_loop_end:
+	;subl	r2,1
+	;jmp		factorial_loop
+	;
+	;factorial_exit:
+	
+	;mov		r0,r3
+	;pop		r3
+	pop		r2
+	leave
+	ret
+
 
 
