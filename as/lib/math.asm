@@ -201,3 +201,39 @@
 	pop		r2
 	leave
 	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;
+; computes div (in r0) and mod (in r1)
+; goes in math.asm
+; no stack frame
+	
+	div8:
+	
+	push	r2
+	
+	subl	sp,4
+	getm	r1,sp,STACK_REGION,0
+	subl	sp,1
+	getm	r2,sp,STACK_REGION,0
+	addl	sp,5
+	
+	;no div by 0 pls
+	cmpl	r2,0
+	jne	div8_legal
+	sfr_write	RSTCON,0x80	;software reset this bad boy
+	div8_legal:
+	
+	;for(; r1>=r2; r1-=r2) {r0++;}
+	set	r0,0
+	jmp	div8_cond
+	div8_loop:
+	addl	r0,1
+	sub	r1,r2
+	div8_cond:
+	cmp	r2,r1
+	jlt	div8_loop
+	
+	pop	r2
+	ret
+
+	

@@ -39,14 +39,15 @@ begin
             prog_mem <= (others => "00000000");
         elsif(clk'event and clk='1') then
             if(we='1') then
-                if( full_addr /= RSTCAUSE and
-                    full_addr /= TMROUT and
-                    full_addr /= TMRSTAT and
-                    full_addr /= INA and
-                    full_addr /= INB and
-                    full_addr /= UARTSTAT and
-                    full_addr /= RXREG
-                    ) then
+                if((unsigned(region) /= SFR_REGION) or
+                   (addr_intgr /= RSTCAUSE and
+                    addr_intgr /= TMROUT and
+                    addr_intgr /= TMRSTAT and
+                    addr_intgr /= INA and
+                    addr_intgr /= INB and
+                    addr_intgr /= UARTSTAT and
+                    addr_intgr /= RXREG
+                    )) then
                     prog_mem(full_addr) <= in_data;
                 end if;
             
