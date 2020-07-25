@@ -69,28 +69,38 @@
 	cmpl		r0,0
 	jeq		main_loop
 
-	;read RXREG, make sure it's correct
+	;read RXREG, echo it to tx
 	sfr_read	r0,RXREG
 	push		r0
 	call		send_uart_char
 	subl		sp,1
 	subl		r0,0x30
 	
-	;r0 = factorial(RXREG);
+	;r0 = factorial(r0);
+	push		r0
+	call		factorial
+	subl		sp,1
+
 	;push		r0
-	;call		factorial
-	;subl		sp,1
+	;push		r0
+	;call		badmult8
+	;subl		sp,2
+	;mov			r0,r1
+
+	;add			r0,r0
+	;add			r0,r0
+	;add			r0,r0
 
 	;let's make sure factorial is computing correctly...
-	set 		r2,OUTA
-	setm		r2,r0,SFR_REGION,0
-	set 		r2,250
-	push 		r2
-	call		delay_ms
-	call		delay_ms
-	call		delay_ms
-	call		delay_ms
-	subl		sp,1
+	;set 		r2,OUTA
+	;setm		r2,r0,SFR_REGION,0
+	;set 		r2,250
+	;push 		r2
+	;call		delay_ms
+	;call		delay_ms
+	;call		delay_ms
+	;call		delay_ms
+	;subl		sp,1
 	
 	;printf("%d\n", r2);
 	set		r2,10
@@ -105,66 +115,13 @@
 	
 	jmp		main_loop
 	
-	
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;arg0 is the number
-;arg1 is the base
-;
-;[n,digit] = div(n,base)
-;putchar(numtoascii(digit))
-
-	uart_print_u8:
-	enter
-	
-	push	r2
-	
-	;get args into r0, r2
-	subl	bp,4
-	getm	r0,bp,STACK_REGION,0
-	subl	bp,1
-	getm	r1,bp,STACK_REGION,0
-	addl	bp,5
-	
-	;
-	push	r2
-	uart_print_u8_loop:
-	push	r0
-	call	div8
-	subl	sp,1	;leave r2 on the stack
-	
-	;convert r1 to ascii
-	cmpl	r1,10
-	jlt		uart_print_u8_numeric_char
-	addl	r1,0x41		;'A'
-	jmp		uart_print_u8_char_converted
-	uart_print_u8_numeric_char:
-	addl	r1,0x30		;'0'
-	uart_print_u8_char_converted:
-	
-	;print the char
-	push	r1
-	call	send_uart_char
-	subl	sp,1
-	
-	cmpl	r0,0
-	jne	uart_print_u8_loop
-	
-	;restore sp from previous 
-	subl	sp,1
-	
-	pop	r2
-	
-	leave
-	ret
-	
 
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 	factorial:
 	enter
 
-	push	r1
+	;push	r1
 	push	r2
 	push	r3
 
@@ -179,9 +136,10 @@
 	;fact *= i
 	push	r3
 	push	r2
-	call	mult8
+	call	badmult8
 	subl	sp,2
-	mov		r3,r1
+	;mov		r3,r1
+	mov		r3,r0
 
 	factorial_loop_end:
 	subl	r2,1
@@ -191,9 +149,32 @@
 	mov		r0,r3
 	pop		r3
 	pop		r2
-	pop 	r1
+	;pop 	r1
 	leave
 	ret
 
 
+;;;;;;;;;;;;;;;;;;;;;;
+
+	badmult8:
+
+	subl	sp,3
+	getm	r4,sp,STACK_REGION,0
+	subl	sp,1
+	getm	r5,sp,STACK_REGION,0
+	addl	sp,4
+
+	set 	r0,0
+	
+	jmp		badmult_loop_cond
+
+	badmult_loop:
+	add 	r0,r4
+	subl	r5,1
+
+	badmult_loop_cond:
+	cmpl	r5,0
+	jne		badmult_loop
+
+	ret
 

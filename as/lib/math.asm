@@ -77,13 +77,15 @@
 ;
 	lsl16:
 
-	subl sp,3
+	push	r2
+
+	subl sp,4
 	getm r0,sp,STACK_REGION,0 ;r0 is in_hi (arg0)
 	subl sp,1
 	getm r1,sp,STACK_REGION,0 ;r1 is in_lo (arg1)
 	subl sp,1
 	getm r2,sp,STACK_REGION,0 ;r5 is bits (arg2)
-	addl sp,5
+	addl sp,6
 
 	cmpl 	r2,8
 	jlt		lsl16_shift_less_than_half
@@ -97,7 +99,8 @@
 	;upper = (upper<<b) | (lower>>(8-b))
 	lsl16_shift_less_than_half:
 	lsl 	r0,r2	;(upper<<b)
-	sub 	r5,r2	;r3 = 8-b
+	set 	r5,8
+	sub 	r5,r2	;r5 = 8-b
 	mov 	r4,r1
 	lsr 	r4,r5	;lower>>(8-b)
 	or 		r0,r4
@@ -105,6 +108,7 @@
 	lsl 	r1,r2
 
 	lsl16_exit:
+	pop		r2
 	ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -224,16 +228,17 @@
 	div8_legal:
 	
 	;for(; r1>=r2; r1-=r2) {r0++;}
-	set	r0,0
-	jmp	div8_cond
+	set		r0,0
+	jmp		div8_cond
 	div8_loop:
 	addl	r0,1
-	sub	r1,r2
+	sub		r1,r2
 	div8_cond:
-	cmp	r2,r1
-	jlt	div8_loop
+	cmp 	r2,r1
+	jlt		div8_loop
+	jeq		div8_loop
 	
 	pop	r2
 	ret
 
-	
+

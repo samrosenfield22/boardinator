@@ -55,8 +55,8 @@
 	sfr_write	TMRCON,MS_TMRCON
 
 	set 		r4,TMRSTAT
-	jmp			delay_ms_cond
 	set 		r5,1
+	jmp			delay_ms_cond
 
 	;while((TMRSTAT & 1) != 1) {}
 	delay_ms_loop:

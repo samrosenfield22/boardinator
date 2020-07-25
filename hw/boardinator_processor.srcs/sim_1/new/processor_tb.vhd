@@ -85,13 +85,13 @@ begin
         
         rx <= '0';          --start
         wait for 0.104ms;
-        rx <= '1';          --b0
+        rx <= '0';          --b0
         wait for 0.104ms;
-        rx <= '0';          --b1
+        rx <= '1';          --b1
         wait for 0.104ms;
         rx <= '1';          --b2
         wait for 0.104ms;
-        rx <= '1';          --b3
+        rx <= '0';          --b3
         wait for 0.104ms;
         rx <= '1';          --b4
         wait for 0.104ms;
@@ -104,8 +104,10 @@ begin
         rx <= '1';          --stop
         wait for 0.104ms;
         
-        wait for 5000ms;
+        wait for 500000ms;
     end process;
+    
+    gpio_pins(10 downto 8) <= "100";
     
 --    switch_test: process
 --    begin
