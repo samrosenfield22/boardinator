@@ -41,9 +41,10 @@
 	
 	;blink led according to button input (only the lower 2 buttons)
 	sfr_read	r0,INB
-	not		r0
-	set		r2,0x03
-	and		r0,r2
+	not			r0
+	;set		r2,0x03
+	;and		r0,r2
+	andl		r0,0x03
 	
 	cmpl r0,0
 	jeq case_a
@@ -74,8 +75,9 @@
 	push		r0
 	call		delay_ms
 	subl		sp,1
-	set			r2,0x01
-	xor			r3,r2
+	;set			r2,0x01
+	;xor			r3,r2
+	xorl		r3,0x01
 	
 	;if((UARTSTAT & 0x04)==0) goto main_loop;
 	sfr_read	r0,UARTSTAT
@@ -104,11 +106,6 @@
 	push		r0
 	call		uart_print_u8
 	subl		sp,2
-	;set		r2,0x0A		;'\n'
-	;push		r2
-	;call		send_uart_char
-	;subl		sp,1
-
 	putchar		0x0D		;'\r'
 	putchar		0x0A		;'\n'
 	

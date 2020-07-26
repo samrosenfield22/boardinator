@@ -102,6 +102,7 @@ begin
 --    end process;
     
     alu_b_in <= lit when (operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
+        operand=XORL_OP or operand=ANDL_OP or operand=ORL_OP or
         operand=CMPL_OP or operand=GETPCL_OP or operand=GETPCH_OP or
         operand=SETM_OP)
     else b_sig;

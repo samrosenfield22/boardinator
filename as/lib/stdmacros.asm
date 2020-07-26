@@ -25,7 +25,8 @@
 .define "sfr_write sfr,byte" "set r4,sfr\n set r5,byte\n setm r4,r5,SFR_REGION,0"
 .define "sfr_read reg,sfr" "set r4,sfr\n getm reg,r4,SFR_REGION,0"
 
-.define "nop" "addl r0,0"
+.define "nop"	"addl r0,0"
+.define "not r"	"xorl r,0xFF"
 
 ;;;;;;;;;;;;;;;;;;;;;;; memory regions ;;;;;;;;;;;;;;;;;;;;;;;
 .define "STACK_REGION" "0"

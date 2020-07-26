@@ -21,8 +21,9 @@ send_uart_char:
 	;while((UARTSTAT & 1) == 1) {}
 	send_loop:
 	sfr_read	r1,UARTSTAT
-	set 		r5,1
-	and 		r1,r5
+	;set 		r5,1
+	;and 		r1,r5
+	andl		r1,0x01
 	cmpl		r1,1
 	jeq 		send_loop
 

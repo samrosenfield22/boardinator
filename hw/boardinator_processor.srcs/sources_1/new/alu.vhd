@@ -32,18 +32,18 @@ architecture Behavioral of alu is
 begin
     mux_out <=  b when operand=SET_OP else
                 b when operand=MOV_OP else
-                adder_out when operand=ADD_OP else
-                adder_out when operand=ADDL_OP else
-                subt_out when operand=SUB_OP else
-                subt_out when operand=SUBL_OP else
+                adder_out when (operand=ADD_OP or operand=ADDL_OP) else
+                --adder_out when operand=ADDL_OP else
+                subt_out when (operand=SUB_OP or operand=SUBL_OP) else
+                --subt_out when operand=SUBL_OP else
                 lsl_out when operand=LSL_OP else
                 lsr_out when operand=LSR_OP else
-                xor_out when operand=XOR_OP else
-                and_out when operand=AND_OP else
-                or_out when operand=OR_OP else
-                not_out when operand=NOT_OP else
-                "00000000" when operand=CMP_OP else
-                "00000000" when operand=CMPL_OP else
+                xor_out when (operand=XOR_OP or operand=XORL_OP) else
+                and_out when (operand=AND_OP or operand=ANDL_OP) else
+                or_out when (operand=OR_OP or operand=ORL_OP) else
+                --not_out when operand=NOT_OP else
+                "00000000" when (operand=CMP_OP or operand=CMPL_OP) else
+                --"00000000" when operand=CMPL_OP else
                 --...
                 adder_out when operand=SETM_OP else
                 b when operand=GETPCL_OP else

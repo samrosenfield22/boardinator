@@ -49,13 +49,15 @@ opcode	mnemonic	op0	op1			machine code		example				description
 00100	sub			dst src 			00011ddd 00000sss	sub r1,r0			dst -= src
 00101 	subl		dst lit 			00101ddd llllllll	subl r0,1			dst -= lit
 00110	xor			dst src 			00100ddd 00000sss	xor r1,r0			dst ^= src
+		xorl
 00111	lsl
 01000	lsr
 01001	and			dst src 			00101ddd 00000sss	and r1,r0			dst &= src
+		andl
 01010	or			dst src 			00110ddd 00000sss	or r1,r0			dst |= src
+		orl
 01011	cmp			dst src 			00111ddd 00000sss	cmp r1,r0			sets Equal and Greater/Less Than Flag
 01100	cmpl		dst lit 			01101ddd llllllll
-01100	not			dst 				01010ddd 00000000	not r0				dst != dst
 01101	jmp 		label				010110aa aaaaaaaa	jmp label			goto label
 01110	jeq 		label				011000aa aaaaaaaa	jeq label			if(EF) goto label
 01111	jne 		label				011010aa aaaaaaaa	jne label			if(!EF) goto label

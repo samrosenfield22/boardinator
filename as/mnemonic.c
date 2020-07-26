@@ -6,7 +6,6 @@
 mnem_entry mnemonic_table[] =
 {
 	{"set", format_machine_reg_literal},
-
 	{"mov", format_machine_double_reg},
 	{"add", format_machine_double_reg},
 	{"addl", format_machine_reg_literal},
@@ -15,12 +14,15 @@ mnem_entry mnemonic_table[] =
 	{"lsl", format_machine_double_reg},
 	{"lsr", format_machine_double_reg},
 	{"xor", format_machine_double_reg},
+	{"xorl", format_machine_reg_literal},
 	{"and", format_machine_double_reg},
+	{"andl", format_machine_reg_literal},
 	{"or", format_machine_double_reg},
+	{"orl", format_machine_reg_literal},
 	{"cmp", format_machine_double_reg},
 	{"cmpl", format_machine_reg_literal},
 
-	{"not", format_machine_single_op},	//i think this still isn't implemented
+	//{"not", format_machine_single_op},	//i think this still isn't implemented
 
 	{"jmp", format_machine_jmp},
 	{"jeq", format_machine_jmp},
@@ -36,8 +38,6 @@ mnem_entry mnemonic_table[] =
 	{"getpch", format_machine_single_op},
 	{"setpc", format_machine_double_reg}
 
-	//{"setsfr", format_machine_sfr},
-	//{"getsfr", format_machine_sfr}
 };
 
 /*mnem_entry pseudoinstruction_table[] =

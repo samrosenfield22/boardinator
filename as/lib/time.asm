@@ -73,8 +73,9 @@
 	;while((TMRSTAT & 1) == 1) {}
 	delay_ms_wait_til_lo:
 	getm		r1,r4,SFR_REGION,0
-	set 		r5,1
-	and			r1,r5
+	;set 		r5,1
+	;and			r1,r5
+	andl		r1,0x01
 	cmpl 		r1,1
 	jeq			delay_ms_wait_til_lo
 
