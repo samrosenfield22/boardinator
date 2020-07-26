@@ -21,15 +21,20 @@ mnem_entry mnemonic_table[] =
 	{"orl", format_machine_reg_literal},
 	{"cmp", format_machine_double_reg},
 	{"cmpl", format_machine_reg_literal},
+	{"test", format_machine_double_reg},
+	{"testl", format_machine_reg_literal},
 
 	//{"not", format_machine_single_op},	//i think this still isn't implemented
 
 	{"jmp", format_machine_jmp},
-	{"jeq", format_machine_jmp},
-	{"jne", format_machine_jmp},
-	{"jgt", format_machine_jmp},
-	{"jlt", format_machine_jmp},
-	{"jovf", format_machine_jmp},
+	//{"jeq", format_machine_jmp},
+	//{"jne", format_machine_jmp},
+	//{"jgt", format_machine_jmp},
+	//{"jlt", format_machine_jmp},
+	{"jz", format_machine_jmp},
+	{"jnz", format_machine_jmp},
+	{"jov", format_machine_jmp},
+	{"jnov", format_machine_jmp},
 
 	{"setm", format_machine_quad_reg},
 	{"getm", format_machine_quad_reg},

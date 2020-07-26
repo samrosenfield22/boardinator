@@ -25,24 +25,29 @@ constant OR_OP:     opcode := 12;
 constant ORL_OP:    opcode := 13;
 constant CMP_OP:    opcode := 14;
 constant CMPL_OP:   opcode := 15;
+constant TEST_OP:   opcode := 16;
+constant TESTL_OP:  opcode := 17;
 --constant NOT_OP:    opcode := 13;
-constant JMP_OP:    opcode := 16;
-constant JEQ_OP:    opcode := 17;
-constant JNE_OP:    opcode := 18;
-constant JGT_OP:    opcode := 19;
-constant JLT_OP:    opcode := 20;
-constant JOVF_OP:   opcode := 21;
-constant SETM_OP:   opcode := 22;
-constant GETM_OP:   opcode := 23;
-constant GETPCL_OP: opcode := 24;
-constant GETPCH_OP: opcode := 25;
-constant SETPC_OP:  opcode := 26;
+constant JMP_OP:    opcode := 18;
+--constant JEQ_OP:    opcode := 17;
+--constant JNE_OP:    opcode := 18;
+--constant JGT_OP:    opcode := 19;
+--constant JLT_OP:    opcode := 20;
+constant JZ_OP:     opcode := 19;
+constant JNZ_OP:    opcode := 20;
+constant JOV_OP:    opcode := 21;
+constant JNOV_OP:   opcode := 22;
+constant SETM_OP:   opcode := 23;
+constant GETM_OP:   opcode := 24;
+constant GETPCL_OP: opcode := 25;
+constant GETPCH_OP: opcode := 26;
+constant SETPC_OP:  opcode := 27;
 --constant _OP:    opcode := 2
 
 --flag bits
-constant EF_FLAG:   integer := 0;
-constant GLF_FLAG:  integer := 1;
-constant OF_FLAG:   integer := 2;
+constant ZF_FLAG:   integer := 0;
+--constant GLF_FLAG:  integer := 1;
+constant OF_FLAG:   integer := 1;
 
 --memory region ids
 constant STACK_REGION:  integer := 0;

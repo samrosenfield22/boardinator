@@ -34,16 +34,17 @@ begin
                 b when operand=MOV_OP else
                 adder_out when (operand=ADD_OP or operand=ADDL_OP) else
                 --adder_out when operand=ADDL_OP else
-                subt_out when (operand=SUB_OP or operand=SUBL_OP) else
+                subt_out when (operand=SUB_OP or operand=SUBL_OP or
+                    operand=CMP_OP or operand=CMPL_OP) else
                 --subt_out when operand=SUBL_OP else
                 lsl_out when operand=LSL_OP else
                 lsr_out when operand=LSR_OP else
                 xor_out when (operand=XOR_OP or operand=XORL_OP) else
-                and_out when (operand=AND_OP or operand=ANDL_OP) else
+                and_out when (operand=AND_OP or operand=ANDL_OP or
+                    operand=TEST_OP or operand=TESTL_OP) else
                 or_out when (operand=OR_OP or operand=ORL_OP) else
                 --not_out when operand=NOT_OP else
-                "00000000" when (operand=CMP_OP or operand=CMPL_OP) else
-                --"00000000" when operand=CMPL_OP else
+                --"00000000" when (operand=CMP_OP or operand=CMPL_OP) else
                 --...
                 adder_out when operand=SETM_OP else
                 b when operand=GETPCL_OP else
@@ -59,25 +60,29 @@ begin
     or_out <= a OR b;
     not_out <= not(a);
     
-    --flags
-    --process(a,b,op,clk)
-    process(clk)
+    
+    set_zero_flag: process(clk)
     begin
         if(rising_edge(clk)) then
-            if(operand=CMP_OP or operand=CMPL_OP) then
-                if(a=b) then
-                    flags_int(EF_FLAG) <= '1';
+            if(operand=CMP_OP or operand=CMPL_OP or operand=TEST_OP or operand=TESTL_OP) then
+            
+                if(mux_out = "00000000") then
+                    flags_int(ZF_FLAG) <= '1';
                 else
-                    flags_int(EF_FLAG) <= '0';
+                    flags_int(ZF_FLAG) <= '0';
                 end if;
+            
+--                if(a=b) then
+--                    flags_int(EF_FLAG) <= '1';
+--                else
+--                    flags_int(EF_FLAG) <= '0';
+--                end if;
                 
-                if(a>b) then
-                    flags_int(GLF_FLAG) <= '1';
-                else
-                    flags_int(GLF_FLAG) <= '0';
-                end if;
-                
-                --flags <= flags_int;
+--                if(a>b) then
+--                    flags_int(GLF_FLAG) <= '1';
+--                else
+--                    flags_int(GLF_FLAG) <= '0';
+--                end if;
             end if;
         end if;
     end process;
@@ -92,7 +97,7 @@ begin
                 else
                     flags_int(OF_FLAG) <= '0';
                 end if;
-            elsif(operand=SUB_OP or operand=SUBL_OP) then
+            elsif(operand=SUB_OP or operand=SUBL_OP or operand=CMP_OP or operand=CMPL_OP) then
                 if(unsigned(subt_out) > unsigned(a)) then  --underflow
                     flags_int(OF_FLAG) <= '1';
                 else

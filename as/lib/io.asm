@@ -23,9 +23,12 @@ send_uart_char:
 	sfr_read	r1,UARTSTAT
 	;set 		r5,1
 	;and 		r1,r5
-	andl		r1,0x01
-	cmpl		r1,1
-	jeq 		send_loop
+	;andl		r1,0x01
+	;cmpl		r1,1
+	;jz 			send_loop
+	testl		r1,0x01
+	jnz			send_loop
+	
 
 	sfr_write	UARTCON,0x82
 	ret
@@ -60,7 +63,7 @@ send_uart_char:
 	
 	;convert r1 to ascii
 	cmpl	r1,10
-	jlt		uart_print_u8_numeric_char
+	jov		uart_print_u8_numeric_char
 	addl	r1,0x37		;'A'-10
 	jmp		uart_print_u8_char_converted
 	uart_print_u8_numeric_char:
@@ -77,7 +80,7 @@ send_uart_char:
 	addl	r3,1
 	
 	cmpl	r0,0
-	jne	uart_print_u8_loop
+	jnz	uart_print_u8_loop
 
 	;pop each digit off the stack, print it
 	jmp		uart_print_u8_rev_cond
@@ -87,7 +90,7 @@ send_uart_char:
 	subl	r3,1
 	uart_print_u8_rev_cond:
 	cmpl	r3,0
-	jne		uart_print_u8_rev_loop	
+	jnz		uart_print_u8_rev_loop	
 	
 	pop		r3
 	pop 	r2

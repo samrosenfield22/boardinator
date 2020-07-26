@@ -60,30 +60,37 @@
 	sfr_write	TMRCON,MS_TMRCON
 
 	set 		r4,TMRSTAT
-	set 		r5,1
+	;set 		r5,1
 	jmp			delay_ms_cond
 
 	;while((TMRSTAT & 1) != 1) {}
 	delay_ms_loop:
 	getm		r1,r4,SFR_REGION,0
-	and			r1,r5
-	cmpl 		r1,1
-	jne			delay_ms_loop
+	;and			r1,r5
+	;cmpl 		r1,1
+	;jnz			delay_ms_loop
+
+	testl		r1,0x01
+	jz 			delay_ms_loop
 
 	;while((TMRSTAT & 1) == 1) {}
 	delay_ms_wait_til_lo:
 	getm		r1,r4,SFR_REGION,0
 	;set 		r5,1
 	;and			r1,r5
-	andl		r1,0x01
-	cmpl 		r1,1
-	jeq			delay_ms_wait_til_lo
+
+	;andl		r1,0x01
+	;cmpl 		r1,1
+	;jz			delay_ms_wait_til_lo
+
+	testl		r1,0x01
+	jnz 		delay_ms_wait_til_lo
 
 	subl		r0,1
 
 	delay_ms_cond:
 	cmpl		r0,0
-	jne			delay_ms_loop
+	jnz			delay_ms_loop
 	
 	pop			r1
 	pop			r0

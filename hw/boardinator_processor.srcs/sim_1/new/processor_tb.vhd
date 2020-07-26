@@ -81,7 +81,7 @@ begin
     rxtest: process
     begin
         rx <= '1';
-        wait for 5ms;
+        wait for 150ms;
         
         rx <= '0';          --start
         wait for 0.104ms;

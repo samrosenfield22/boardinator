@@ -37,12 +37,12 @@
 
 	;add lower bytes
 	add r1,r4
-	jovf add16_lo_ovflw
+	jov add16_lo_ovflw
 	jmp add16_add_hi_bytes
 
 	add16_lo_ovflw:
 	addl r0,1
-	jovf add16_hi_ovflw_1
+	jov add16_hi_ovflw_1
 	jmp add16_add_hi_bytes
 
 	add16_hi_ovflw_1:
@@ -50,7 +50,7 @@
 
 	add16_add_hi_bytes:
 	add r0,r5
-	jovf add16_hi_ovflw_2
+	jov add16_hi_ovflw_2
 	jmp add16_exit
 
 	add16_hi_ovflw_2:
@@ -88,7 +88,7 @@
 	addl sp,6
 
 	cmpl 	r2,8
-	jlt		lsl16_shift_less_than_half
+	jov		lsl16_shift_less_than_half
 
 	lsl16_shift_half:
 	mov 	r0,r1
@@ -160,7 +160,7 @@
 	;getlcl	r3,2	;mask
 	;and 	r1,r3
 	;cmpl	r1,0
-	;jne		mult8_shift_and_add
+	;jnz		mult8_shift_and_add
 	;jmp		mult8_loop_end
 
 	;mult8_shift_and_add:
@@ -227,7 +227,7 @@
 	subl	r5,1
 	mult_loop_cond:
 	cmpl	r5,0
-	jne		mult_loop
+	jnz		mult_loop
 
 	ret
 
@@ -247,7 +247,7 @@
 	
 	;no div by 0 pls
 	cmpl	r2,0
-	jne	div8_legal
+	jnz	div8_legal
 	sfr_write	RSTCON,0x80	;software reset this bad boy
 	div8_legal:
 	
@@ -259,8 +259,8 @@
 	sub		r1,r2
 	div8_cond:
 	cmp 	r2,r1
-	jlt		div8_loop
-	jeq		div8_loop
+	jov		div8_loop
+	jz		div8_loop
 	
 	pop	r2
 	ret
@@ -285,12 +285,12 @@
 	push	r2
 	call	mult8
 	subl	sp,2
+	
 
 	factorial_loop_cond:
 	subl	r2,1
-	cmpl	r2,1
-	jgt		factorial_loop
-
+	cmpl	r2,2
+	jnov	factorial_loop
 
 
 	;factorial_init:
@@ -299,7 +299,7 @@
 	;
 	;factorial_loop:
 	;cmpl	r2,1
-	;jeq		factorial_exit
+	;jz		factorial_exit
 	;
 	;;fact *= i
 	;push	r3

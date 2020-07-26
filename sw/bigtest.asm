@@ -47,13 +47,13 @@
 	andl		r0,0x03
 	
 	cmpl r0,0
-	jeq case_a
+	jz case_a
 	cmpl r0,1
-	jeq case_b
+	jz case_b
 	cmpl r0,2
-	jeq case_c
+	jz case_c
 	cmpl r0,3
-	jeq case_d
+	jz case_d
 	;default
 	jmp switch_end
 	case_a:
@@ -86,7 +86,7 @@
 	set		r2,0x04
 	and		r0,r2
 	cmpl		r0,0
-	jeq		main_loop
+	jz		main_loop
 
 	;read RXREG, echo it to tx
 	sfr_read	r0,RXREG

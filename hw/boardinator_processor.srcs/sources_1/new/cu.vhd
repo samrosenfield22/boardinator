@@ -73,28 +73,26 @@ begin
                         if(operand < CMP_OP) then  --ALU operation
                             data_en <= '1';
                             next_pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(operand = CMP_OP or operand = CMPL_OP) then
+                        elsif(operand = CMP_OP or operand = CMPL_OP or
+                            operand = TEST_OP or operand = TESTL_OP) then
                             data_en <= '0';
                             next_pc <= std_logic_vector(unsigned(pc) + 1);
-                        elsif(operand <= JOVF_OP) then    --jmp operations
+                        elsif(operand <= JNOV_OP) then    --jmp operations
                             data_en <= '0';
                             
-                            if(operand = JMP_OP) then --jmp
+                            if(operand = JMP_OP) then
                                 next_pc <= addr_sig;
-                            elsif(operand = JEQ_OP) then  --jeq
-                                if(flags(EF_FLAG)='1') then next_pc <= addr_sig;
+                            elsif(operand = JZ_OP) then
+                                if(flags(ZF_FLAG)='1') then next_pc <= addr_sig;
                                 else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(operand = JNE_OP) then  --jne
-                                if(flags(EF_FLAG)='0') then next_pc <= addr_sig;
+                            elsif(operand = JNZ_OP) then
+                                if(flags(ZF_FLAG)='0') then next_pc <= addr_sig;
                                 else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(operand = JGT_OP) then  --jgt
-                                if(flags(GLF_FLAG)='1' and flags(EF_FLAG)='0') then next_pc <= addr_sig;
-                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(operand = JLT_OP) then  --jlt
-                                if(flags(GLF_FLAG)='0' and flags(EF_FLAG)='0') then next_pc <= addr_sig;
-                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
-                            elsif(operand = JOVF_OP) then  --jovf
+                            elsif(operand = JOV_OP) then
                                 if(flags(OF_FLAG)='1') then next_pc <= addr_sig;
+                                else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
+                            elsif(operand = JNOV_OP) then
+                                if(flags(OF_FLAG)='0') then next_pc <= addr_sig;
                                 else next_pc <= std_logic_vector(unsigned(pc) + 1); end if;
                             end if;
 
