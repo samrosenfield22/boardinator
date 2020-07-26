@@ -279,9 +279,9 @@ begin
         rstcon_sfr => prog_mem_regs(RSTCON + SFR_REGION_ADDR),
         rstcause_sfr => rstcause_sfr,
         --global_rst => rst
-		  global_rst => open
+		global_rst => open
     );
-	 rst <= ext_rst;
+	rst <= ext_rst;
     
     timer_mod: timer_module port map (
         rst => rst,
@@ -298,8 +298,6 @@ begin
         write_sfr => prog_mem_regs(OUTA + SFR_REGION_ADDR),
         read_sfr => ina_sfr,
         pins => gpio_pins(7 downto 0)
-        --pins => gpio_pins
-		  --pins => open
     );
     port_b: iobank_module port map (
         mode_sfr => prog_mem_regs(MODEB + SFR_REGION_ADDR),

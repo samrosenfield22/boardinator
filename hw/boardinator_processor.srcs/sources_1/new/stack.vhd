@@ -33,35 +33,35 @@ signal addr_intgr, full_addr: integer range 0 to PROC_MEMORY_END;
 
 begin
 
-    process(rst,clk)
+    process(clk)
     begin
-        if(rst='0') then
-            prog_mem <= (others => "00000000");
-        elsif(clk'event and clk='1') then
-            if(we='1') then
-                if((unsigned(region) /= SFR_REGION) or
-                   (addr_intgr /= RSTCAUSE and
-                    addr_intgr /= TMROUT and
-                    addr_intgr /= TMRSTAT and
-                    addr_intgr /= INA and
-                    addr_intgr /= INB and
-                    addr_intgr /= UARTSTAT and
-                    addr_intgr /= RXREG
-                    )) then
-                    prog_mem(full_addr) <= in_data;
+        if(rising_edge(clk)) then
+            if(rst='0') then
+                prog_mem <= (others => "00000000");
+            else
+                if(we='1') then
+                    if((unsigned(region) /= SFR_REGION) or
+                       (addr_intgr /= RSTCAUSE and
+                        addr_intgr /= TMROUT and
+                        addr_intgr /= TMRSTAT and
+                        addr_intgr /= INA and
+                        addr_intgr /= INB and
+                        addr_intgr /= UARTSTAT and
+                        addr_intgr /= RXREG
+                        )) then
+                        prog_mem(full_addr) <= in_data;
+                    end if;  
                 end if;
             
-                
+                --set SFRs that are written to by peripherals
+                prog_mem(RSTCAUSE + SFR_REGION_ADDR) <= rstcause_sfr;
+                prog_mem(TMROUT + SFR_REGION_ADDR) <= tmrout_sfr;
+                prog_mem(TMRSTAT + SFR_REGION_ADDR) <= tmrstat_sfr;
+                prog_mem(INA + SFR_REGION_ADDR) <= ina_sfr;
+                prog_mem(INB + SFR_REGION_ADDR) <= inb_sfr;
+                prog_mem(UARTSTAT + SFR_REGION_ADDR) <= uartstat_sfr;
+                prog_mem(RXREG + SFR_REGION_ADDR) <= rx_byte_sfr;
             end if;
-            
-            --set SFRs that are written to by peripherals
-            prog_mem(RSTCAUSE + SFR_REGION_ADDR) <= rstcause_sfr;
-            prog_mem(TMROUT + SFR_REGION_ADDR) <= tmrout_sfr;
-            prog_mem(TMRSTAT + SFR_REGION_ADDR) <= tmrstat_sfr;
-            prog_mem(INA + SFR_REGION_ADDR) <= ina_sfr;
-            prog_mem(INB + SFR_REGION_ADDR) <= inb_sfr;
-            prog_mem(UARTSTAT + SFR_REGION_ADDR) <= uartstat_sfr;
-            prog_mem(RXREG + SFR_REGION_ADDR) <= rx_byte_sfr;
         end if;
     end process;
     

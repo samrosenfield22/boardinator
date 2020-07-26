@@ -63,7 +63,7 @@ begin
     --process(a,b,op,clk)
     process(clk)
     begin
-        if(clk'event and clk='1') then
+        if(rising_edge(clk)) then
             if(operand=CMP_OP or operand=CMPL_OP) then
                 if(a=b) then
                     flags_int(EF_FLAG) <= '1';
@@ -85,7 +85,7 @@ begin
     --over/underflow
     process(clk)
     begin
-        if(clk'event and clk='1') then
+        if(rising_edge(clk)) then
             if(operand=ADD_OP or operand=ADDL_OP) then
                 if(unsigned(adder_out) < unsigned(a)) then  --overflow
                     flags_int(OF_FLAG) <= '1';

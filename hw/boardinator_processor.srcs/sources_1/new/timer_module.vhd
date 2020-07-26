@@ -35,7 +35,7 @@ architecture Behavioral of timer_module is
     signal d_qnot_loop: std_logic_vector(PRESCALE_CNT-1 downto 0);
     signal prescaler_clks: std_logic_vector(PRESCALE_CNT downto 0);
     signal prescale_sel: std_logic_vector(PRESCALE_BITS-1 downto 0);
-    signal scaled_clk: std_logic;
+    signal scaled_clk, scaled_clk_r: std_logic := '0';
     
     signal tmr_cnt: std_logic_vector(7 downto 0);
     signal tmr_match, tmr_mode, tmr_cnt_en: std_logic;
@@ -71,19 +71,6 @@ begin
 --        end if;
 --    end process;
     
---    process(rst, scaled_clk, tmr_cnt_en)
---    begin
---        if((rst='0') or (tmr_cnt_en='1')) then
---            tmr_cnt <= (others => '0');
---        else
---            if(tmr_cnt_en = '0') then
---                if(scaled_clk'event and scaled_clk='1') then
---                    tmr_cnt <= std_logic_vector(unsigned(tmr_cnt)+1);
---                end if;
---            end if;
---        end if;
---    end process;
-    
     process(rst, scaled_clk)
     variable tmr_cnt_v: std_logic_vector(7 downto 0) := (others => '0');
     begin
@@ -103,6 +90,29 @@ begin
         
         tmr_cnt <= tmr_cnt_v;
     end process;
+    
+    --this should be a synchronous version of the above process, but it doesn't work. not sure why.
+--    process(clk)
+--        variable tmr_cnt_v: std_logic_vector(7 downto 0) := (others => '0');
+--    begin
+--        if(rising_edge(clk)) then
+        
+--            --register signal to detect edge
+--            scaled_clk_r <= scaled_clk;
+        
+--            if(rst='0' or tmr_on='0') then
+--                tmr_cnt_v := (others => '0');
+--            elsif(scaled_clk_r='0' and scaled_clk='1') then
+--                if(tmr_match='1') then
+--                    tmr_cnt_v := (others => '0');
+--                else
+--                    tmr_cnt_v := std_logic_vector(unsigned(tmr_cnt_v)+1);
+--                end if;
+--            end if;
+            
+--            tmr_cnt <= tmr_cnt_v;
+--        end if;
+--    end process;
     
     tmrout_sfr <= tmr_cnt;
     

@@ -55,66 +55,19 @@ begin
     );
     end generate gen_regs;
     
-    w_addr_split: process(w_addr)
-    begin
-        for i in 0 to 7 loop
-            if(unsigned(w_addr)=i) then dec_sel(i) <= '1'; else dec_sel(i) <= '0'; end if;
-        end loop;
-    end process;
     
-    dec(7) <= clk and we and dec_sel(7);
-    dec(6) <= clk and we and dec_sel(6);
-    dec(5) <= clk and we and dec_sel(5);
-    dec(4) <= clk and we and dec_sel(4);
-    dec(3) <= clk and we and dec_sel(3);
-    dec(2) <= clk and we and dec_sel(2);
-    dec(1) <= clk and we and dec_sel(1);
-    dec(0) <= clk and we and dec_sel(0);
+    dec(7) <= (clk and we) when unsigned(w_addr)=7 else '0';
+    dec(6) <= (clk and we) when unsigned(w_addr)=6 else '0';
+    dec(5) <= (clk and we) when unsigned(w_addr)=5 else '0';
+    dec(4) <= (clk and we) when unsigned(w_addr)=4 else '0';
+    dec(3) <= (clk and we) when unsigned(w_addr)=3 else '0';
+    dec(2) <= (clk and we) when unsigned(w_addr)=2 else '0';
+    dec(1) <= (clk and we) when unsigned(w_addr)=1 else '0';
+    dec(0) <= (clk and we) when unsigned(w_addr)=0 else '0';
     
-    
-    --main_ins <= (to_integer(unsigned(w_addr)) => in_word, others => "00000000");
-    --decoder: process(we, w_addr, clk)
---	 decoder: process(clk)
---    begin
---        if(we='1') then
---            --clock only the reg selected by the write address
---            for i in 0 to 7 loop
---                if(unsigned(w_addr)=i) then dec(i) <= clk;
---                else dec(i) <= '0';
---                end if;
---            end loop;
---        else
---            dec <= (others => '0');
---        end if;
-			 
-----			 for i in 0 to 7 loop
-----				if(unsigned (w_addr)=i) then dec(i) <= clk and we;
-----				else dec(i) <= '0'; end if;
-----			 end loop;
---    end process;
-    
---    incr_ins <= (to_integer(unsigned(b_addr)) => incr_in, others => "00000000");
---    decoder2: process(incr_en, b_addr, clk)
---    begin
---        if(incr_en='1') then
---            --clock only the reg selected by the write address
---            incr_dec <= (to_integer(unsigned(b_addr)) => clk, others => '0');
---        else
---            incr_dec <= (others => '0');
---        end if;
---    end process;
-    
---    both_decs <= dec or incr_dec;
 
 --    --set all inputs to the input word
       reg_ins <= (others => in_word);
---    --reg_ins <= main_ins or incr_ins;
---    process(main_ins, incr_ins)
---    begin
---        for i in 0 to 7 loop
---            reg_ins(i) <= main_ins(i) or incr_ins(i);
---        end loop;
---    end process;
     
     --set outputs
     out_a <= reg_outs(to_integer(unsigned(a_addr)));

@@ -86,55 +86,57 @@ begin
     );
     
     
-    --alu b input is a literal for instructions:
-    --set, addl, subl, getpcl, getpch, setm
-    process(operand, lit, b_sig)
-    begin
-        if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
-        operand=CMPL_OP or operand=GETPCL_OP or operand=GETPCH_OP or
-        operand=SETM_OP) then
-        --if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
-        --if(operand=SET_OP or operand=ADDL_OP or op="00101" or op="10011" or op="10100") then
-            alu_b_in <= lit;
-        else
-            alu_b_in <= b_sig;
-        end if;
-    end process;
-    
-    --register file input mux (selects between ALU Y and stack output
-    process(operand, y_sig, stack_data_out)
-    begin
-        --if(operand=SETM_OP or operand=GETM_OP) then
-        if(operand=GETM_OP) then
-            rf_in <= stack_data_out;
-        else
-            rf_in <= y_sig;
-        end if;
-    end process;
-    
-    --stack address selector
---    process(stack_we, a_sig, b_sig)
+--    --alu b input is a literal for instructions:
+--    --set, addl, subl, getpcl, getpch, setm
+--    process(operand, lit, b_sig)
 --    begin
---        if(stack_we = '1') then
---            stack_addr <= a_sig;
+--        if(operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
+--        operand=CMPL_OP or operand=GETPCL_OP or operand=GETPCH_OP or
+--        operand=SETM_OP) then
+--        --if(op="00000" or op="00011" or op="00101" or op="10011" or op="10100") then
+--        --if(operand=SET_OP or operand=ADDL_OP or op="00101" or op="10011" or op="10100") then
+--            alu_b_in <= lit;
 --        else
---            stack_addr <= b_sig;
+--            alu_b_in <= b_sig;
 --        end if;
 --    end process;
     
+    alu_b_in <= lit when (operand=SET_OP or operand=ADDL_OP or operand=SUBL_OP or
+        operand=CMPL_OP or operand=GETPCL_OP or operand=GETPCH_OP or
+        operand=SETM_OP)
+    else b_sig;
+    
+--    --register file input mux (selects between ALU Y and stack output
+--    process(operand, y_sig, stack_data_out)
+--    begin
+--        --if(operand=SETM_OP or operand=GETM_OP) then
+--        if(operand=GETM_OP) then
+--            rf_in <= stack_data_out;
+--        else
+--            rf_in <= y_sig;
+--        end if;
+--    end process;
+    
+    rf_in <= stack_data_out when (operand = GETM_OP) else y_sig;
+
+    
     --
-    process(flags_sig, dst, operand)
-    --process(flags_sig)
-    begin
-        if((flags_sig(OF_FLAG)='1') and 
+--    process(flags_sig, dst, operand)
+--    begin
+--        if((flags_sig(OF_FLAG)='1') and 
+--        (dst="110" or dst="111") and
+--        (operand=ADD_OP or operand=ADDL_OP or operand=SUB_OP or operand=SUBL_OP)
+--        ) then
+--            stkovflw <= '0';
+--        else
+--            stkovflw <= '1';
+--        end if;
+--    end process;
+    
+    stkovflw <= '0' when ((flags_sig(OF_FLAG)='1') and 
         (dst="110" or dst="111") and
-        (operand=ADD_OP or operand=ADDL_OP or operand=SUB_OP or operand=SUBL_OP)
-        ) then
-            stkovflw <= '0';
-        else
-            stkovflw <= '1';
-        end if;
-    end process;
+        (operand=ADD_OP or operand=ADDL_OP or operand=SUB_OP or operand=SUBL_OP))
+    else '1';
     
     out_word <= y_sig;
     
