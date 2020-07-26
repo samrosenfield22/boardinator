@@ -16,7 +16,7 @@ send_uart_char:
 	set 		r5,TXREG
 	setm 		r5,r4,SFR_REGION,0
 
-	sfr_write	UARTCON,0x81
+	sfr_write	UARTCON,0x83
 
 	;while((UARTSTAT & 1) == 1) {}
 	send_loop:
@@ -26,7 +26,7 @@ send_uart_char:
 	cmpl		r1,1
 	jeq 		send_loop
 
-	sfr_write	UARTCON,0x80
+	sfr_write	UARTCON,0x82
 	ret
 
 

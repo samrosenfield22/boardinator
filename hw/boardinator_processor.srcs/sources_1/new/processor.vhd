@@ -189,16 +189,16 @@ begin
     end process;
     process(clk1)
     begin
-        if(clk1'event and clk1='1') then clk2 <= not(clk2); end if;
+        if(clk1'event and clk1='1') then clk <= not(clk); end if;
     end process;
-    process(clk2)
-    begin
-        if(clk2'event and clk2='1') then clk3 <= not(clk3); end if;
-    end process;
-    process(clk3)
-    begin
-        if(clk3'event and clk3='1') then clk <= not(clk); end if;
-    end process;
+--    process(clk2)
+--    begin
+--        if(clk2'event and clk2='1') then clk3 <= not(clk3); end if;
+--    end process;
+--    process(clk3)
+--    begin
+--        if(clk3'event and clk3='1') then clk <= not(clk); end if;
+--    end process;
     
     
     mock_program_memory: instruction_mem port map (

@@ -11,6 +11,8 @@
 .include "time.asm"
 .include "io.asm"
 
+.define "putchar c" "set r5,c\n push r5\n call send_uart_char\n subl sp,1"
+
 
 	;init sfrs
 	sfr_write	MODEA,0xFF
@@ -19,6 +21,21 @@
 	sfr_write	UARTCON,0x80	;i think? timer on, no loopback, lo baud, don't convert yet
 	
 	set		r3,0x00		;led value
+
+	;
+	set 		r5,100
+	push		r5
+	call		delay_ms
+	subl		sp,1
+	putchar		0x62		;'b'
+	putchar		0x69		;'i'
+	putchar		0x67		;'g'
+	putchar		0x74		;'t'
+	putchar		0x65		;'e'
+	putchar		0x73		;'s'
+	putchar		0x74		;'t'
+	putchar		0x0D		;'\r'
+	putchar		0x0A		;'\n'
 	
 	main_loop:
 	
@@ -80,27 +97,6 @@
 	push		r0
 	call		factorial
 	subl		sp,1
-
-	;push		r0
-	;push		r0
-	;call		badmult8
-	;subl		sp,2
-	;mov			r0,r1
-
-	;add			r0,r0
-	;add			r0,r0
-	;add			r0,r0
-
-	;let's make sure factorial is computing correctly...
-	;set 		r2,OUTA
-	;setm		r2,r0,SFR_REGION,0
-	;set 		r2,250
-	;push 		r2
-	;call		delay_ms
-	;call		delay_ms
-	;call		delay_ms
-	;call		delay_ms
-	;subl		sp,1
 	
 	;printf("%d\n", r2);
 	set		r2,10
@@ -108,17 +104,18 @@
 	push		r0
 	call		uart_print_u8
 	subl		sp,2
-	set		r2,0x0A		;'\n'
-	push		r2
-	call		send_uart_char
-	subl		sp,1
+	;set		r2,0x0A		;'\n'
+	;push		r2
+	;call		send_uart_char
+	;subl		sp,1
+
+	putchar		0x0D		;'\r'
+	putchar		0x0A		;'\n'
 	
 	jmp		main_loop
 	
 
-	
 
-;;;;;;;;;;;;;;;;;;;;;;
 
 	
 

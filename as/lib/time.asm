@@ -39,8 +39,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;clk is (50/32)MHz
+;.define "MS_TMRCMP"	"195"
+;.define "MS_TMRCON"	"0x83"	;0x80 | prescale
+
+;clk is 50/8 MHz
 .define "MS_TMRCMP"	"195"
-.define "MS_TMRCON"	"0x83"	;0x80 | prescale
+.define "MS_TMRCON"	"0x85"	;0x80 | prescale
+
 	delay_ms:
 
 	push		r0

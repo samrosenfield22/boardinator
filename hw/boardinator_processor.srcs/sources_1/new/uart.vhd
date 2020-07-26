@@ -45,16 +45,21 @@ constant RXAVAIL_BIT:   natural := 2;
 
 --values calculated to give 1/9600 and 1/115200 sec delays
 --using the sfr calculator
-constant LO_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0000";     --0
-constant LO_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "01010001"; --81;
+--constant LO_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0000";     --0
+--constant LO_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "01010001"; --81;
+--constant HI_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0000";     --0
+--constant HI_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "00000111"; --7    3.2% error
+
+constant LO_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0001";     --1
+constant LO_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "10100011"; --163;
 constant HI_BAUD_PRESCALE:  std_logic_vector(3 downto 0) := "0000";     --0
-constant HI_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "00000111"; --7    3.2% error
+constant HI_BAUD_COMPARE:   std_logic_vector(7 downto 0) := "00011011"; --27
 
 signal txint, rxint, rxint_r:    std_logic := '1';
 
 --signal tx_word:         std_logic_vector(WORDLEN-1 downto 0);
-signal startbits:       std_logic_vector(STARTBIT_CNT-1 downto 0);
-signal stopbits:        std_logic_vector(STOPBIT_CNT-1 downto 0);
+signal startbits:       std_logic_vector(STARTBIT_CNT-1 downto 0) := (others => '0');
+signal stopbits:        std_logic_vector(STOPBIT_CNT-1 downto 0) := (others => '1');
 --signal tx_start:        std_logic := '0';
 
 signal uart_tmr_prescale:   std_logic_vector(3 downto 0);
