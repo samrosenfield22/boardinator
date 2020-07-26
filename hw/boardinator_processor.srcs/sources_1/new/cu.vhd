@@ -33,7 +33,8 @@ end cu;
 
 architecture Behavioral of cu is
 
-type cu_state_t is (fetch, decode, setup, execute, load);
+--type cu_state_t is (fetch, decode, setup, execute, load);
+type cu_state_t is (fetch, setup, execute);
 signal cu_state: cu_state_t := fetch;
 
 signal ir: std_logic_vector(15 downto 0);
@@ -47,7 +48,7 @@ signal update: std_logic_vector(1 downto 0);
 
 begin
     
-    fsm: process(rst, clk)
+    controller: process(rst, clk)
     begin
         if(rst='0') then
             cu_state <= fetch;
@@ -64,10 +65,10 @@ begin
                         ir <= instr_in;
                         data_en <= '0';
                         stack_we <= '0';
-                        cu_state <= decode;
-                    when decode =>
-                        --
                         cu_state <= setup;
+                    --when decode =>
+                    --    --
+                    --    cu_state <= setup;
                     when setup =>
                         if(operand < CMP_OP or operand = NOT_OP) then  --ALU operation
                             data_en <= '1';
@@ -123,10 +124,12 @@ begin
                     when execute =>
                         data_en <= '0';
                         stack_we <= '0';
-                        cu_state <= load;
-                    when load =>
-                        pc <= next_pc;  --happens after data_en goes low
+                        pc <= next_pc;
+                        --cu_state <= load;
                         cu_state <= fetch;
+--                    when load =>
+--                        pc <= next_pc;  --happens after data_en goes low
+--                        cu_state <= fetch;
                     when others =>
                         --ruh roh
                 end case;
